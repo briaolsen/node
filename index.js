@@ -1,4 +1,4 @@
-const cool = require('cool-ascii-faces');
+
 const express = require('express')
 const url = require('url')
 const path = require('path')
@@ -9,8 +9,7 @@ express()
   .use(express.static("public"))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('pages/index'))
-  .get('/cool', (req, res) => res.send(cool()))
+  .get('/', (req, res) => res.render('getRate'))
   .get('/getRate', (req, res) => {
     const parts = url.parse(req.url, true);
     const query = parts.query;
