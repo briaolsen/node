@@ -5,11 +5,11 @@ const path = require('path')
 const PORT = process.env.PORT || 5000
 
 express()
-  //.use(express.static(path.join(__dirname, 'public')))
-  .use(express.static("public"))
+  .use(express.static(path.join(__dirname, 'public')))
+  //.use(express.static("public"))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('/getRate'))
+  .get('/', (req, res) => res.render('pages/assignments'))
   .get('/getRate', (req, res) => {
     const parts = url.parse(req.url, true);
     const query = parts.query;
