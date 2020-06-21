@@ -9,7 +9,7 @@ express()
   .use(express.static("public"))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('getRate'))
+  .get('/', (req, res) => res.render('/getRate'))
   .get('/getRate', (req, res) => {
     const parts = url.parse(req.url, true);
     const query = parts.query;
