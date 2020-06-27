@@ -18,14 +18,10 @@
     </div>
 
     <script>
-      $( "#results" ).load( function( event ) {
-          event.preventDefault();
-          
+      $(document).ready(function(){          
           $.ajax({
               url: "/database",
-              type: "GET",
-              data: NULL,
-              complete: function(response) {
+              success: function(response) {
                   $('#results').text(response.responseText);
               }
           });
