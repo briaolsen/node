@@ -8,7 +8,7 @@ dotenv.config();
 request = require("request");
 
 const app = express()
-const port = 3000
+const port = process.env.PORT || 5000
 
 const api = new BlizzAPI({
     region: 'us',
