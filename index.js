@@ -26,11 +26,11 @@ app.get('/getItem', async (req, res) => {
   let params = {};
   if (query.itemNum) {
         
-    const data =  await api.query('/data/wow/item/'+ query.itemNum + '?namespace=static-us&locale=en_US');
-    params.name = data.name;
-    params.id = data.id;
-    const icon =   await api.query(`/data/wow/media/item/${data.id}?namespace=static-us&locale=en_US`);
-    params.icon = icon.assets[0].value;
+    //const data =  await api.query('/data/wow/item/'+ query.itemNum + '?namespace=static-us&locale=en_US');
+    //params.name = data.name;
+    //params.id = data.id;
+    //const icon =   await api.query(`/data/wow/media/item/${data.id}?namespace=static-us&locale=en_US`);
+    //params.icon = icon.assets[0].value;
   }
 
   res.setHeader('Content-Type', 'text/html');
