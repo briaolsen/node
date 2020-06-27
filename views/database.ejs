@@ -22,7 +22,7 @@
           $.ajax({
               url: "/database",
               success: function(response) {
-                  $('#results').text(response.responseText);
+                $('#results').text(JSON.stringify(response));
               }
           });
       });
