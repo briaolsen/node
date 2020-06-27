@@ -26,14 +26,9 @@
 
   <form method="GET" action="insertItem" >
 
-    <label for="id">Item ID</label>
-    <input type="text" id="id" name="id" value="<%= id %>">
-
-    <label for="id">Item Name</label>
-    <input type="text" id="name" name="name" value="<%= name %>">
-
-    <label for="id">Item Icon</label>
-    <input type="text" id="icon" name="icon" value="<%= icon %>">
+    <input type="hidden" id="id" name="id" value="<%= id %>">
+    <input type="hidden" id="name" name="name" value="<%= name %>">
+    <input type="hidden" id="icon" name="icon" value="<%= icon %>">
     
     <button type="submit">Insert Item</button>
   </form>

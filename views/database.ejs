@@ -11,13 +11,25 @@
     <title>Classic Wishlist</title>
   </head>
   <body>
-    <h1>Your wishlist</h1>
+    <h1>Item Database</h1>
 
-    <form method="GET" action="getItem" >
-      <label for="itemNum">Item Number</label>
-      <input type="text" id="itemNum" name="itemNum">
-      <button type="submit">Get Item</button>
-    </form>
+    <div id="results">
 
+    </div>
+
+    <script>
+      $( "#results" ).load( function( event ) {
+          event.preventDefault();
+          
+          $.ajax({
+              url: "/database",
+              type: "GET",
+              data: NULL,
+              complete: function(response) {
+                  $('#results').text(response.responseText);
+              }
+          });
+      });
+    </script>
   </body>
 </html>
