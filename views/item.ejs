@@ -1,23 +1,29 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Classic Wishlist</title>
-  </head>
-  <body>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 
-    <div id="displayItem">
-      <%= itemNum %>
-      <%= name %>
-      <%= icon %>
-    </div>
+  <title>Classic Wishlist</title>
+</head>
+
+<body>
+
+  <div id="displayItem">
+    <%= id %>
+    <%= name %>
+    <a href="https://classic.wowhead.com/?item=<%= id %>"><img src="<%= icon %>"></a><br>
+    <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
+    <script src="https://wow.zamimg.com/widgets/power.js"></script>
+  </div>
 
 
-  </body>
+</body>
+
 </html>

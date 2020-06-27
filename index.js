@@ -10,9 +10,6 @@ request = require("request");
 const app = express()
 const port = 3000
 
-// Found in a file named .env in the project root
-// BLIZZARD_API_CLIENT_ID="client id"
-// BLIZZARD_API_CLIENT_SECRET="client secret"
 const api = new BlizzAPI({
     region: 'us',
     clientId: process.env.BLIZZARD_API_CLIENT_ID,
@@ -23,62 +20,23 @@ app.set('view engine', 'ejs')
 app.get('/', (req, res) =>res.render('wishlist'));
 
 
-app.get('/getItem', (req, res) => {
+app.get('/getItem', async (req, res) => {
   const parts = url.parse(req.url, true);
   const query = parts.query;
   let params = {};
   if (query.itemNum) {
-    
-    //params = getItem(query.itemNum);
-    //params.itemNum = "3";
-    params.itemNum = query.itemNum;
-    //params.name = "" + 
-    params.name = getName(query.itemNum);
-    //params.name = "hi";
-    //params.icon = 
-    params.icon = getIcon(query.itemNum);
-    /*
-    const data =  await api.query('/data/wow/item/'+ itemNum + '?namespace=static-us&locale=en_US');
-    params.name = `${data.name}`;
-    params.id = `${data.id}`;
+        
+    const data =  await api.query('/data/wow/item/'+ query.itemNum + '?namespace=static-us&locale=en_US');
+    params.name = data.name;
+    params.id = data.id;
     const icon =   await api.query(`/data/wow/media/item/${data.id}?namespace=static-us&locale=en_US`);
-    params.icon = `<a href="https://classic.wowhead.com/?item=${data.id}"><img src="${icon.assets[0].value}" border="2"></a><br>
-    <script>const whTooltips = {colorLinks: true, iconizeLinks: false, renameLinks: false};</script>
-    <script src="https://wow.zamimg.com/widgets/power.js"></script>
-    `;*/
+    params.icon = icon.assets[0].value;
   }
 
   res.setHeader('Content-Type', 'text/html');
   res.render('item', params);
 
 })
-
-
-function getName(itemNum) {  
-  const data =  await api.query('/data/wow/item/'+ itemNum + '?namespace=static-us&locale=en_US');
-  return data.name;
-  /*
-  params.name = `${data.name}`;
-  params.id = `${data.id}`;
-  const icon =   await api.query(`/data/wow/media/item/${data.id}?namespace=static-us&locale=en_US`);
-  params.icon = `<a href="https://classic.wowhead.com/?item=${data.id}"><img src="${icon.assets[0].value}" border="2"></a><br>
-  <script>const whTooltips = {colorLinks: true, iconizeLinks: false, renameLinks: false};</script>
-  <script src="https://wow.zamimg.com/widgets/power.js"></script>
-  `;
-
-  return params;*/
-}
-
-async function getIcon(itemNum) {
-  const iconAPI =   await api.query(`/data/wow/media/item/` + itemNum + `?namespace=static-us&locale=en_US`);
-
-  let icon = `<a href="https://classic.wowhead.com/?item=` + itemNum + `"><img src="${icon.assets[0].value}" border="2"></a><br>
-  <script>const whTooltips = {colorLinks: true, iconizeLinks: false, renameLinks: false};</script>
-  <script src="https://wow.zamimg.com/widgets/power.js"></script>
-  `;
-
-  return icon;
-}
 
 app.get('/get', async (req, res) => {
     try {
