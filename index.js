@@ -78,19 +78,17 @@ app.get("/database", (req, res) => {
 
   const sql = 'SELECT * FROM item';
   pool.query(sql, function(err, result) {
-  if(err) {
+  
     if (err) {
       console.log("Error in query: ")
       console.log(err);
-        }
+    }
         
         console.log("Found result: " + JSON.stringify(result.rows));
 
         res.send(result.rows);
-    }
-  })
-
-}
+    });
+});
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
