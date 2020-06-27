@@ -21,7 +21,22 @@
     <a href="https://classic.wowhead.com/?item=<%= id %>"><img src="<%= icon %>"></a><br>
     <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
     <script src="https://wow.zamimg.com/widgets/power.js"></script>
+    
   </div>
+
+  <form method="GET" action="insertItem" >
+
+    <label for="id">Item ID</label>
+    <input type="text" id="id" name="id" value="<%= id %>">
+
+    <label for="id">Item Name</label>
+    <input type="text" id="name" name="name" value="<%= name %>">
+
+    <label for="id">Item Icon</label>
+    <input type="text" id="icon" name="icon" value="<%= icon %>">
+    
+    <button type="submit">Insert Item</button>
+  </form>
 
 
 </body>
