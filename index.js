@@ -66,8 +66,8 @@ app.get("/insertItem", (req, res) => {
       console.log("Error in query: ");
       console.log(err);
     } else {
-      res.setHeader("Content-Type", "text/html");
-      res.render("database");
+      //res.setHeader("Content-Type", "text/html");
+      res.redirect("database");
     }
   });
 });
