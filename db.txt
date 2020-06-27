@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS item;
+
+CREATE TABLE item
+(
+	id INT PRIMARY KEY,
+	name VARCHAR(150) NOT NULL,
+	icon VARCHAR(300)
+
+);
+
