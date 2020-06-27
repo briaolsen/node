@@ -38,6 +38,7 @@ app.get('/getItem', async (req, res) => {
 
 })
 
+/*
 app.get('/get', async (req, res) => {
     try {
         const data = await api.query(`/data/wow/item/19019?namespace=static-us&locale=en_US`);
@@ -62,7 +63,7 @@ app.get('/get', async (req, res) => {
         res.status(error.status).send(error.response.body);
         //=> 'Internal server error ...'
     }
-})
+})*/
 
 
 app.listen(port, () => {
