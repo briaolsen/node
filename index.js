@@ -60,7 +60,7 @@ app.get("/insertItem", (req, res) => {
   //params.name = req.query.name;
   //params.icon = req.query.icon;
   
-  const sql = `INSERT INTO item (id, name, icon) VALUES (${query.id},${query.name},${query.icon})`;
+  //const sql = `INSERT INTO item (id, name, icon) VALUES (${query.id},${query.name},${query.icon})`;
   const sql = `INSERT INTO item (id, name, icon) VALUES ($1, $2, $3)`;
 
   pool.query(sql, [query.id, query.name, query.icon], function(err, result) {
