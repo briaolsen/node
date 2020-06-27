@@ -55,13 +55,13 @@ const pool = new Pool({
 app.get("/insertItem", (req, res) => {
 
   let params = {};
-  params.id = req.query.id;
-  params.name = req.query.name;
-  params.icon = req.query.icon;
+  //params.id = req.query.id;
+  //params.name = req.query.name;
+  //params.icon = req.query.icon;
   
-  const sql = 'INSERT INTO item (id, name, icon) VALUES (?,?,?)';
+  const sql = `INSERT INTO item (id, name, icon) VALUES (${data.id},${data.name},${data.icon})`;
 
-  pool.query(sql, params, function(err, result) {
+  pool.query(sql, function(err, result) {
     if (err) {
 			console.log("Error in query: ")
 			console.log(err);
