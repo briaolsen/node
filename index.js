@@ -83,10 +83,9 @@ app.get("/database", (req, res) => {
       console.log("Error in query: ")
       console.log(err);
     }
-        
-        console.log("Found result: " + JSON.stringify(result.rows));
-
         res.send(result.rows);
+        res.setHeader("Content-Type", "text/html");
+      res.render("database");
     });
 });
 
