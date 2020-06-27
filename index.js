@@ -61,8 +61,9 @@ app.get("/insertItem", (req, res) => {
   //params.icon = req.query.icon;
   
   const sql = `INSERT INTO item (id, name, icon) VALUES (${query.id},${query.name},${query.icon})`;
+  const sql = `INSERT INTO item (id, name, icon) VALUES ($1, $2, $3)`;
 
-  pool.query(sql, function(err, result) {
+  pool.query(sql, [query.id, query.name, query.icon], function(err, result) {
     if (err) {
 			console.log("Error in query: ")
 			console.log(err);
