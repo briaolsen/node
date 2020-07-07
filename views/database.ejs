@@ -76,6 +76,7 @@
       console.log("Called Find ID");
       event.preventDefault();
       var data = $("#findId").serialize();
+      console.log(data);
       $.ajax({
         url: "/getItemById",
         type: "GET",
@@ -99,6 +100,7 @@
             html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
             html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
             html += '<input type="hidden" name="icon" value="' + data.icon + '">';
+            //html += '<input type="hidden" name="slot" value="' + data.slot + '">';
             html += '</form></td></tr>';
 
           } else {

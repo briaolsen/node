@@ -116,6 +116,7 @@
       console.log("Called Find Name");
       event.preventDefault();
       var data = $("#findName").serialize();
+      console.log(data);
       $.ajax({
         url: "/getItemByName",
         type: "GET",
@@ -141,11 +142,13 @@
       });
     });
 
-    $(".button").click( function (event) {
-      console.log("Button clicked");
-      let data = [];
-      data[id] = event.target.id;
-      data = data.serialize();
+    $(document).on("click", '.button', function (event) {
+      event.preventDefault();
+      console.log("Button clicked " + this.id);
+      data = 'id=' + this.id;
+      //let data = [];
+      //data['id'] = this.id;
+      console.log(data);
       $.ajax({
         url: "/getItemById",
         type: "GET",

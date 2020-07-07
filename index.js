@@ -18,24 +18,24 @@ const api = new BlizzAPI({
 });
 
 const slots = [
-  {slot: 'Head',      name:'Head'},
-  {slot: 'Neck',      name:'Neck'},
-  {slot: 'Shoulder',  name:'Shoulder'},
-  {slot: 'Back'},
-  {slot: 'Chest',     name: 'Chest'},
-  {slot: 'Wrist',     name: 'Wrist'},
-  {slot: 'Hands',     name: 'Hands'},
-  {slot: 'Waist',     name: 'Waist'},
-  {slot: 'Legs',      name: 'Legs'},
-  {slot: 'Feet',      name: 'Feet'},
-  {slot: 'Finger1',   name: 'Finger'},
-  {slot: 'Finger2',   name: 'Finger'},
-  {slot: 'Trinket1',  name: 'Trinket'},
-  {slot: 'Trinket2',  name: 'Trinket'},
-  {slot: 'Mainhand',  name: [{name:'Two-Hand'}, {name:'One-Hand'}, {name: 'Main Hand'}]},
-  {slot: 'Offhand'},
-  {slot: 'Ranged',    name: [{name:'RANGEDRIGHT'}, {name:'Relic'}]},
-  {slot: 'Quiver'}
+  {slot: 'Head',      name: ['Head']},
+  {slot: 'Neck',      name: ['Neck']},
+  {slot: 'Shoulder',  name: ['Shoulder']},
+  {slot: 'Back',      name: ['Back']},
+  {slot: 'Chest',     name: ['Chest']},
+  {slot: 'Wrist',     name: ['Wrist']},
+  {slot: 'Hands',     name: ['Hands']},
+  {slot: 'Waist',     name: ['Waist']},
+  {slot: 'Legs',      name: ['Legs']},
+  {slot: 'Feet',      name: ['Feet']},
+  {slot: 'Finger1',   name: ['Finger']},
+  {slot: 'Finger2',   name: ['Finger']},
+  {slot: 'Trinket1',  name: ['Trinket']},
+  {slot: 'Trinket2',  name: ['Trinket']},
+  {slot: 'Mainhand',  name: ['Two-Hand', 'One-Hand','Main Hand']},
+  {slot: 'Offhand',   name: ['One-Hand','Held in Off-hand','Off Hand']},
+  {slot: 'Ranged',    name: ['RANGEDRIGHT','Relic']},
+  {slot: 'Quiver',    name: ['Bag']}
 ]
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -59,7 +59,9 @@ app.get("/login", (req, res)=> {
 // SEARCH ITEM BY ID
 app.get("/getItemById", async (req, res) => {
   const parts = url.parse(req.url, true);
+  console.log(req.query);
   const id = req.query.id;
+  console.log(id);
   let params = {};
   try {
     if (id) {
@@ -75,6 +77,7 @@ app.get("/getItemById", async (req, res) => {
       params.itemSubclass = data.item_subclass.name;
       params.inventoryType = data.inventory_type.type;
       params.inventoryName = data.inventory_type.name;
+      //params.slot = getSlot(data.inventoryType, data.inventoryName);
 
       const icon = await api.query(
         `/data/wow/media/item/${data.id}?namespace=static-classic-us&locale=en_US`
@@ -107,7 +110,8 @@ const pool = new Pool({
 app.get("/getItemByName", (req, res) => {
   const parts = url.parse(req.url, true);
   const query = parts.query;
-  const sql = `SELECT * FROM item WHERE name ~* $1`;
+  const sql = `SELECT * FROM items WHERE name ~* $1`;
+  //const sql = `SELECT * FROM items2 WHERE name ~* $1`;
 
   pool.query(sql, [query.name], function (err, result) {
     if (err) {
@@ -125,19 +129,12 @@ app.post("/insertItemDatabase", (req, res) => {
   console.log(req.body);
   const data = req.body;
   console.log(data.id);
-  /*params = [];
-  params[id] = data.id;
-  params[name] = data.name;
-  params[quality] = data.quality;
-  params[itemClass] = data.itemClass;
-  params[itemSubclass] = data.itemSubclass;
-  params[inventoryType] = data.inventoryType;
-  params[inventoryName] = data.inventoryName;
-  params[icon] = data.icon;*/
+  console.log(data.slot);
 
+  //const sql = `INSERT INTO items2 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
   const sql = `INSERT INTO items VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
 
-  pool.query(sql, [data.id, data.name, data.quality, data.itemClass, data.itemSubclass, data.inventoryType, data.inventoryName, data.icon], function (err, result) {
+  pool.query(sql, [data.id, data.name, data.quality, data.itemClass, data.itemSubclass, data.inventoryType, data.inventoryName, data.icon/*, data.slot*/], function (err, result) {
     if (err) {
       console.log("Error in query: ");
       console.log(err);
@@ -147,11 +144,20 @@ app.post("/insertItemDatabase", (req, res) => {
   });
 });
 
+function getSlot(type, names) {
+  for(var i = 0; i < slots.length; i++) {
+    if (slots[i].name.includes(type) || slots[i].name.includes(names)) {
+      return slots[i].slot;
+    }
+  }
+  return "none";
+}
 
 // SHOW DATABASE
 app.get("/getDatabase", (req, res) => {
 
   const sql = 'SELECT * FROM items';
+  //const sql = 'SELECT * FROM items2';
   pool.query(sql, function (err, result) {
 
     if (err) {
@@ -167,6 +173,7 @@ app.get("/getDatabase", (req, res) => {
 });
 
 // INSERT ITEM INTO WISHLIST
+
 app.post("/insertItemWishlist", (req, res) => {
   console.log("Item is being inserted into wishlist...");
   console.log(req.body);
