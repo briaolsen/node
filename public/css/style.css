@@ -1,0 +1,57 @@
+.table-fit {
+    width: auto !important;
+    height: auto !important;
+    margin-left: 30px;
+}
+
+table.table-fit tr {
+    padding-top: 15px;
+}
+
+.table-borderless {
+    border: 0px;
+    width: auto !important;
+    height: auto !important;
+}
+
+#results th {
+    font-size: 24px;
+}
+
+#wishlist-table th {
+    font-size: 24px;
+}
+
+#wishlist-table {
+    width: auto !important;
+    height: auto !important;
+    margin-left: 30px;
+}
+
+#wishlist-table tr {
+    margin: 50px;
+}
+
+.quality {
+    font-weight: bold;
+}
+
+.EPIC {
+    color: #8035EE;
+}
+
+.RARE {
+    color: #0070DD;
+}
+
+.UNCOMMON {
+    color: #1BDB05;
+}
+
+.COMMON {
+    color: white;
+}
+
+.POOR {
+    color: grey;
+}

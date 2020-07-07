@@ -1,23 +1,166 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Classic Wishlist</title>
-  </head>
-  <body>
-    <h1>Your wishlist</h1>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <!-- AJAX JQUERY -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- STYLESHEET CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <title>Classic Wishlist</title>
+</head>
 
-    <form method="GET" action="getItem" >
-      <label for="itemNum">Item Number</label>
-      <input type="text" id="itemNum" name="itemNum">
-      <button type="submit">Get Item</button>
+<body>
+
+  <%- include ('../partials/header') %>
+
+  <div class="jumbotron">
+    <h1 class="display-4">Wishlist</h1>
+    <img src="">
+    <p class="lead">Add an item to your wishlist.</p>
+    <hr class="my-4">
+    <form id="findName">
+      <label for="name">Item Name</label>
+      <input type="text" id="name" name="name">
+      <button type="submit">Search for Item</button>
     </form>
+    <hr class="my-4">
+    <div>
 
-  </body>
+      <table id="itemInfo" class="table table-fit table-dark">
+      </table>
+
+    </div>
+  </div>
+
+  <table id="wishlist-table">
+    <tr>
+      <th colspan="3">
+        Wishlist Name
+      </th>
+    </tr>
+
+    <form id="wishlistForm">
+    <tr>
+      <th colspan="3">
+        <input type="text" id="wishlistName" name="wishlistName">
+      </th>
+    </tr>
+
+    <% for (var i=0; i < slots.length; i++) { %>
+      <tr>
+        <td>
+          <label for="slot-<%= slots[i].slot %>"><%= slots[i].slot %></label>
+          <input type="hidden" id="slot-<%= slots[i].slot %>" name="slot-<%= slots[i].slot %>" value="">
+        </td>
+        <td id="img-<%= slots[i].slot %>">
+          <img src = "images/blank.png">
+        </td>
+        <td id="name-<%= slots[i].slot %>">
+        </td>
+      </tr>
+    </form>
+    
+    <% } %>
+
+
+  </table>
+
+  <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
+  <script src="https://wow.zamimg.com/widgets/power.js"></script>
+
+  <script>
+/*
+    $("#findName").on('submit', function (event) {
+      console.log("Called Find Name");
+      event.preventDefault();
+      var data = $("#findName").serialize();
+      $.ajax({
+        url: "/getItemByName",
+        type: "GET",
+        data: data,
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          let html = '';
+          let img ='';
+          let name = '';
+          let form = '';
+          data.forEach(function (item) {
+            img += '<a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a>';
+            name += item.name;
+            form += '<button type="submit">Add</button>';
+            form += '<input type="hidden" name="id" value="' + data.id + '">';
+          });
+
+          if (data.length < 1) {
+            $('#item-name').html("No results");
+          } else {
+            $('#item-img').html(img);
+            $('#item-name').html(name);
+            $('#item-form').html(form);
+          }
+
+        }
+      });
+    });*/
+
+    $("#findName").on('submit', function (event) {
+      console.log("Called Find Name");
+      event.preventDefault();
+      var data = $("#findName").serialize();
+      $.ajax({
+        url: "/getItemByName",
+        type: "GET",
+        data: data,
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          let html = '';
+          data.forEach(function (item) {
+            html += '<tr><td><button type="button" class="button" id="'+item.id+'">Add</button>'
+            html += '<td><a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a></td>';
+            html += '<td>' + item.name + "</td></tr>";
+          });
+
+          if (data.length < 1) {
+            $('#itemInfo').html("No results");
+          } else {
+            $('#itemInfo').html(html);
+          }
+
+        }
+      });
+    });
+
+    $(".button").click( function (event) {
+      console.log("Button clicked");
+      let data = [];
+      data[id] = event.target.id;
+      data = data.serialize();
+      $.ajax({
+        url: "/getItemById",
+        type: "GET",
+        data: data,
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText).data;
+          console.log(data);
+          
+        }
+      });
+    });
+
+  </script>
+
+</body>
+
 </html>

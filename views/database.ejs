@@ -1,31 +1,116 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Classic Wishlist</title>
-  </head>
-  <body>
-    <h1>Item Database</h1>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
-    <div id="results">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
 
+  <title>Classic Wishlist</title>
+</head>
+
+<body>
+
+  <%- include ('../partials/header') %>
+
+  <div class="jumbotron">
+    <h1 class="display-4">Item Database</h1>
+    <img src="">
+    <p class="lead">Add an item to the Database by Item ID</p>
+    <hr class="my-4">
+    <form id="findId">
+      <label for="id">Item ID</label>
+      <input type="text" id="id" name="id">
+      <button type="submit">Find Item by ID</button>
+    </form>
+    <hr class="my-4">
+    <div>
+      <table id="itemInfo" class="table table-borderless">
+
+      </table>
     </div>
+  </div>
 
-    <script>
-      $(document).ready(function(){          
-          $.ajax({
-              url: "/database",
-              success: function(response) {
-                $('#results').text(response.responseText);
-              }
+  <table id="results" class="table table-fit table-dark">
+
+  </table>
+
+  <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
+  <script src="https://wow.zamimg.com/widgets/power.js"></script>
+
+  <script>
+
+    $(document).ready(function () {
+      $.ajax({
+        url: "/getDatabase",
+        type: "GET",
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          let html = '';
+          html = '<tr><th colspan="3">Item Database</th></tr>'
+          data.forEach(function (item) {
+            html += '<tr>';
+            html += '<td>' + item.id + '</td>';
+            html += '<td><a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a></td>';
+            html += '<td class="' + item.quality + ' quality">' + item.name + '</td>';
+            html += '</tr>';
           });
+
+          console.log(html);
+          $('#results').html(html);
+
+        }
       });
-    </script>
-  </body>
+    });
+
+    $("#findId").on('submit', function (event) {
+      console.log("Called Find ID");
+      event.preventDefault();
+      var data = $("#findId").serialize();
+      $.ajax({
+        url: "/getItemById",
+        type: "GET",
+        data: data,
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText).data;
+          console.log(data);
+          let html = '';
+
+          if (data != null) {
+            html += '<tr><td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
+            html += '<td class="' + data.quality + ' quality">' + data.name + '</td>';
+            html += '<td><form method="post" action="/insertItemDatabase">';
+            html += '<button type="submit">Insert Item</button>';
+            html += '<input type="hidden" name="id" value="' + data.id + '">';
+            html += '<input type="hidden" name="name" value="' + data.name + '">';
+            html += '<input type="hidden" name="quality" value="' + data.quality + '">';
+            html += '<input type="hidden" name="itemClass" value="' + data.itemClass + '">';
+            html += '<input type="hidden" name="itemSubclass" value="' + data.itemSubclass + '">';
+            html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
+            html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
+            html += '<input type="hidden" name="icon" value="' + data.icon + '">';
+            html += '</form></td></tr>';
+
+          } else {
+            html = 'Item not found.';
+          }
+          
+          $('#itemInfo').html(html);
+        }
+      });
+    });
+
+  </script>
+</body>
+
 </html>
