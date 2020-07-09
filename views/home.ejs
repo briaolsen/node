@@ -10,36 +10,118 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 
-  <title>Hello, world!</title>
+  <!-- AJAX JQUERY-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+  <title>WoWishlist</title>
 </head>
 
 <body>
   <%- include ('../partials/header') %>
 
+  <% if (!loginStatus) { %>
   <div class="jumbotron">
-    <h1 class="display-4">Welcome!</h1>
+    <h1 class="display-4" id="welcome">Welcome to WoWishlist!</h1>
     <img src="">
-    <p class="lead">Here you will be able to search and add items to your own personal wishlist.</p>
+    <p class="lead" id="welcome-text">Here you will be able to search and add items to your own personal wishlist.</p>
     <hr class="my-4">
-    <p>Please login with your player name.</p>
-    <form>
-      <input type="text" id="player" name="player">
-      <button type="submit" class="btn btn-dark btn-lg">Login</button>
-    </form>
+    <div id="login-div" class="container">
+      <div class="row">
+        <div class="col-sm">
+          <p>Please login with your character name and password.</p>
+          <label for="username">Character</label><br>
+          <input type="text" id="username" name="username"><br><br>
+          <label for="password">Password</label><br>
+          <input type="password" id="password" name="password"><br><br>
+          <button onclick="login();" class="btn btn-dark btn-lg">Login</button><br><br>
+        </div>
+
+        <div class="col-sm">
+          <p>Don't have a wishlist yet? Create a new account!</p>
+          <label for="username2">Character</label><br>
+          <input type="text" id="username2" name="username2"><br><br>
+          <label for="password2">Password</label><br>
+          <input type="password" id="password2" name="password2"><br><br>
+          <button onclick="createAccount();" class="btn btn-dark btn-lg">Create Account</button>
+        </div>
+
+      </div>
+    </div>
   </div>
+<% } else { %>
+  <div class="jumbotron">
+    <h1 class="display-4" id="welcome">Welcome <%'Username' + user %>!</h1>
+    <img src="">
+    <p class="lead" id="welcome-text">Search through the database and add items to your wishlist!</p>
+    <hr class="my-4">
+    
+  </div>
+  <% } %>
 
   <script>
 
-    $("form").on('submit', function (event) {
-      event.preventDefault();
-      var data = $("form").serialize();
+    function login() {
+      console.log("Submitted Login Info");
+      var username = $("#username").val();
+      var password = $("#password").val();
+
+      var params = {
+        username: username,
+        password: password
+      };
+
       $.ajax({
         url: "/login",
-        type: "GET",
-        data: data
-        
+        type: "POST",
+        data: params,
+        complete: function (response) {
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          if (data.success) {
+            location.reload();
+            /*
+            let html = '';
+            html = "Welcome " + data + "!";
+            console.log(html);
+            $('#welcome').html(html);
+            document.getElementById("login-div").innerHTML = "";
+            document.getElementById("welcome-text").innerHTML = "Visit our item database or your personal wishlist from the navigation bar above."*/
+          }
+        }
       });
-    });
+    };
+
+    function createAccount() {
+      console.log("Submitted New Account Info");
+      var username = $("#username2").val();
+      var password = $("#password2").val();
+
+      var params = {
+        username: username,
+        password: password
+      };
+
+      $.ajax({
+        url: "/createAccount",
+        type: "POST",
+        data: params,
+        complete: function (response) {
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          if (data.success) {
+            location.reload();
+            /*
+            let html = '';
+            html = "Welcome " + data.username + "!";
+            console.log(html);
+            $('#welcome').html(html);
+            document.getElementById("login-div").innerHTML = "";
+            document.getElementById("welcome-text").innerHTML = "Visit our item database or your personal wishlist from the navigation bar above."*/
+          }
+
+        }
+      });
+    };
 
   </script>
 
@@ -47,9 +129,7 @@
 
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-    crossorigin="anonymous"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
     integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
     crossorigin="anonymous"></script>
