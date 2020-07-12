@@ -25,14 +25,17 @@
     <img src="">
     <p class="lead">Add an item to the Database by Item ID</p>
     <hr class="my-4">
-    <form id="findId">
+    <div class="col-5">
+      <form id="findId">
       <label for="id">Item ID</label>
-      <input type="text" id="id" name="id">
-      <button type="submit">Find Item by ID</button>
+      <input type="text" id="id" name="id" class="form-control"><br>
+      <button type="submit" class="btn btn-dark btn-lg">Find Item by ID</button>
     </form>
+    </div>
+    
     <hr class="my-4">
     <div>
-      <table id="itemInfo" class="table table-borderless">
+      <table id="itemInfo" class="table table-borderless table-dark">
 
       </table>
     </div>
@@ -88,11 +91,10 @@
           let html = '';
 
           if (data != null) {
-            html += '<tr><td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
+            html += '<tr><td><form id="form-'+data.id+'"><button type="button" class="button btn btn-light btn-lg" id='+data.id+'>Insert Item</button></td>';
+            html += '<td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
             html += '<td class="' + data.quality + ' quality">' + data.name + '</td>';
-            html += '<td><form method="post" action="/insertItemDatabase">';
-            html += '<button type="submit">Insert Item</button>';
-            html += '<input type="hidden" name="id" value="' + data.id + '">';
+            html += '<td><input type="hidden" name="id" value="' + data.id + '">';
             html += '<input type="hidden" name="name" value="' + data.name + '">';
             html += '<input type="hidden" name="quality" value="' + data.quality + '">';
             html += '<input type="hidden" name="itemClass" value="' + data.itemClass + '">';
@@ -108,6 +110,24 @@
           }
           
           $('#itemInfo').html(html);
+        }
+      });
+    });
+
+    $(document).on("click", '.button', function (event) {
+      event.preventDefault();
+      console.log("Button clicked " + this.id);
+      var data = $("#form-" + this.id).serialize();
+      console.log(data);
+      $.ajax({
+        url: "/insertItemDatabase",
+        type: "POST",
+        data: data,
+        dataType: 'json',
+        complete: function (response) {
+          let data = JSON.parse(response.responseText).data;
+          console.log(data);
+
         }
       });
     });

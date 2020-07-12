@@ -13,6 +13,10 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <!-- STYLESHEET CSS -->
   <link rel="stylesheet" href="css/style.css">
+
+  <script>const whTooltips = {colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: false};</script>
+  <script src="https://wow.zamimg.com/widgets/power.js"></script>
+
   <title>Classic Wishlist</title>
 </head>
 
@@ -25,12 +29,18 @@
     <img src="">
     <p class="lead">Add an item to your wishlist.</p>
     <hr class="my-4">
-    <form id="findName">
-      <label for="name">Item Name</label>
-      <input type="text" id="name" name="name">
-      <button type="submit">Search for Item</button>
-    </form>
+    <div class="row">
+      <div class="col-5">
+        <form id="findName">
+          <label for="name">Item Name</label>
+          <input type="text" id="name" name="name" class="form-control"><br>
+          <button type="submit" class="btn btn-dark btn-lg">Search for Item</button>
+        </form>
+      </div>
+    </div>
+
     <hr class="my-4">
+
     <div>
 
       <table id="itemInfo" class="table table-fit table-dark">
@@ -39,78 +49,11 @@
     </div>
   </div>
 
-  <table id="wishlist-table">
-    <tr>
-      <th colspan="3">
-        Wishlist Name
-      </th>
-    </tr>
-
-    <form id="wishlistForm">
-    <tr>
-      <th colspan="3">
-        <input type="text" id="wishlistName" name="wishlistName">
-      </th>
-    </tr>
-
-    <% for (var i=0; i < slots.length; i++) { %>
-      <tr>
-        <td>
-          <label for="slot-<%= slots[i].slot %>"><%= slots[i].slot %></label>
-          <input type="hidden" id="slot-<%= slots[i].slot %>" name="slot-<%= slots[i].slot %>" value="">
-        </td>
-        <td id="img-<%= slots[i].slot %>">
-          <img src = "images/blank.png">
-        </td>
-        <td id="name-<%= slots[i].slot %>">
-        </td>
-      </tr>
-    </form>
-    
-    <% } %>
-
+  <table id="wish-table">
 
   </table>
 
-  <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
-  <script src="https://wow.zamimg.com/widgets/power.js"></script>
-
   <script>
-/*
-    $("#findName").on('submit', function (event) {
-      console.log("Called Find Name");
-      event.preventDefault();
-      var data = $("#findName").serialize();
-      $.ajax({
-        url: "/getItemByName",
-        type: "GET",
-        data: data,
-        dataType: 'json',
-        complete: function (response) {
-          let data = JSON.parse(response.responseText);
-          console.log(data);
-          let html = '';
-          let img ='';
-          let name = '';
-          let form = '';
-          data.forEach(function (item) {
-            img += '<a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a>';
-            name += item.name;
-            form += '<button type="submit">Add</button>';
-            form += '<input type="hidden" name="id" value="' + data.id + '">';
-          });
-
-          if (data.length < 1) {
-            $('#item-name').html("No results");
-          } else {
-            $('#item-img').html(img);
-            $('#item-name').html(name);
-            $('#item-form').html(form);
-          }
-
-        }
-      });
-    });*/
 
     $("#findName").on('submit', function (event) {
       console.log("Called Find Name");
@@ -127,9 +70,9 @@
           console.log(data);
           let html = '';
           data.forEach(function (item) {
-            html += '<tr><td><button type="button" class="button" id="'+item.id+'">Add</button>'
+            html += '<tr><td><button type="button" class="button btn btn-light btn-lg" id="' + item.id + '">Add</button>'
             html += '<td><a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a></td>';
-            html += '<td>' + item.name + "</td></tr>";
+            html += '<td class="' + item.quality + '">' + item.name + "</td></tr>";
           });
 
           if (data.length < 1) {
@@ -142,22 +85,49 @@
       });
     });
 
+    $(document).ready(function (event) {
+      displayWishlist();
+    });
+
+    function displayWishlist() {
+      console.log("Getting Wishlist to display...");
+      $.ajax({
+        url: "/getWishlist",
+        type: "GET",
+        complete: function (response) {
+          let wishlist = JSON.parse(response.responseText);
+          console.log(wishlist);
+          let html = "";
+          for (var key in wishlist) {
+            if (key != 'username' && key != 'id') {
+              let icon = "<img src = images/blank.png>";
+              id = wishlist[key];
+              console.log(id);
+              if (id) {
+                icon = `<a href="https://classic.wowhead.com/?item=${id}">${key}</a>`;
+                console.log(icon);
+              }
+              html += `<tr><td>${key}</td>`;
+              html += `<td>${icon}</td></tr>`;
+            }
+
+          }
+          document.getElementById("wish-table").innerHTML = html;
+        }
+      });
+    }
+
     $(document).on("click", '.button', function (event) {
       event.preventDefault();
       console.log("Button clicked " + this.id);
       data = 'id=' + this.id;
-      //let data = [];
-      //data['id'] = this.id;
       console.log(data);
       $.ajax({
-        url: "/getItemById",
-        type: "GET",
+        url: "/insertItemWishlist",
+        type: "POST",
         data: data,
-        dataType: 'json',
         complete: function (response) {
-          let data = JSON.parse(response.responseText).data;
-          console.log(data);
-          
+          displayWishlist();
         }
       });
     });
