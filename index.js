@@ -143,21 +143,26 @@ app.post("/login", (req, results) => {
   const password = req.body.password;
   console.log("attempting login...");
   let loginStatus = false;
-
+  let message = "";
   const sql = `SELECT * FROM users WHERE username = $1`;
 
   pool.query(sql, [username], function (err, result) {
     if (err) {
       console.log("User not found");
       console.log(err);
+      loginStatus = false;
+      message = "Error in login";
       return false;
     } else {
       bcrypt.compare(password, result.rows[0].hash, function (err, res) {
         loginStatus = res;
         if (loginStatus) {
           req.session.username = username;
+          message = "Success";
+        } else {
+          message = "Login Unsuccessful";
         }
-        results.json({ success: loginStatus, username: req.session.username });
+        results.json({ success: loginStatus, message: message, username: req.session.username });
       })
     }
   });
@@ -176,25 +181,30 @@ app.post("/createAccount", (req, res) => {
   bcrypt.hash(password, saltRounds, (err, hash) => {
 
     const sql = `INSERT INTO users VALUES ($1, $2)`;
+    let message = "";
 
     pool.query(sql, [username, hash], function (err, result) {
 
       if (err) {
         console.log("Unable to create account");
         console.log(err);
-        message = "Error in username or password";
+        message = "Username unavailable";
+        loginStatus = false;
+        res.json({ success: loginStatus, message: message, username: null });
       } else {
         loginStatus = true;
         req.session.username = username;
         message = "User " + req.session.username + " created.";
+
+        createWishlist(req.session.username, function(wishListID) {
+          console.log("Created Wishlist with ID: " + wishListID);
+          req.session.wishlistID = wishListID;
+          console.log("Session.Wishlist: " + req.session.wishlistID);
+        });
+        res.json({ success: loginStatus, message: message, username: req.session.username });
       }
-      createWishlist(req.session.username, function(wishListID) {
-        console.log("Created Wishlist with ID: " + wishListID);
-        req.session.wishlistID = wishListID;
-        console.log("Session.Wishlist: " + req.session.wishlistID);
-      });
       
-      res.json({ success: loginStatus, message: message, username: req.session.username });
+      
     });
   });
 });
@@ -287,6 +297,8 @@ app.post("/insertItemDatabase", (req, res) => {
   const data = req.body;
   console.log(data.id);
   console.log(data.slot);
+  let status = false;
+  let message = "";
 
   const sql = `INSERT INTO items VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
 
@@ -306,11 +318,17 @@ app.post("/insertItemDatabase", (req, res) => {
       if (err) {
         console.log("Error in query: ");
         console.log(err);
+        status = false;
+        message = "Item is already in database.";
       } else {
-        res.redirect("database");
+        //res.redirect("database");
+        status = true;
+        message = "Item added to database";
       }
     }
   );
+
+  res.json({status: status, message: message})
 });
 
 
@@ -432,7 +450,7 @@ function createWishlist(username, callback) {
       console.log("Error in createWishlist query: ");
       console.log(err);
     } else {
-      callback(result.rows[0].id) ;
+      callback(result.rows[0].id);
     }
   });
 }

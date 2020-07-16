@@ -33,7 +33,8 @@
           <input type="text" id="username" name="username"><br><br>
           <label for="password">Password</label><br>
           <input type="password" id="password" name="password"><br><br>
-          <button onclick="login();" class="btn btn-dark btn-lg">Login</button><br><br>
+          <button onclick="login();" class="btn btn-dark btn-lg">Login</button>
+          <br><br><span id="loginErr"></span><br><br>
         </div>
 
         <div class="col-sm">
@@ -43,6 +44,7 @@
           <label for="password2">Password</label><br>
           <input type="password" id="password2" name="password2"><br><br>
           <button onclick="createAccount();" class="btn btn-dark btn-lg">Create Account</button>
+          <br><br><span id="createErr" class="warning"></span>
         </div>
 
       </div>
@@ -79,13 +81,9 @@
           console.log(data);
           if (data.success) {
             location.reload();
-            /*
-            let html = '';
-            html = "Welcome " + data + "!";
-            console.log(html);
-            $('#welcome').html(html);
-            document.getElementById("login-div").innerHTML = "";
-            document.getElementById("welcome-text").innerHTML = "Visit our item database or your personal wishlist from the navigation bar above."*/
+          }
+          else {
+            document.getElementById("loginErr").innerHTML = data.message;
           }
         }
       });
@@ -110,13 +108,9 @@
           console.log(data);
           if (data.success) {
             location.reload();
-            /*
-            let html = '';
-            html = "Welcome " + data.username + "!";
-            console.log(html);
-            $('#welcome').html(html);
-            document.getElementById("login-div").innerHTML = "";
-            document.getElementById("welcome-text").innerHTML = "Visit our item database or your personal wishlist from the navigation bar above."*/
+          }
+          else {
+            document.getElementById("createErr").innerHTML = data.message;
           }
 
         }

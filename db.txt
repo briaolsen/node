@@ -8,3 +8,27 @@ CREATE TABLE item
 
 );
 
+CREATE TABLE wishlist
+(
+	id SERIAL PRIMARY KEY NOT NULL,
+	username VARCHAR(32) REFERENCES users(username),
+	head INT,
+	neck INT,
+	shoulder INT,
+	back INT,
+	chest INT,
+	wrist INT,
+	hands INT,
+	waist INT,
+	legs INT,
+	feet INT,
+	finger1 INT,
+	finger2 INT,
+	trinket1 INT,
+	trinket2 INT,
+	mainhand INT,
+	offhand INT,
+	ranged INT,
+	quiver INT
+);
+

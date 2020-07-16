@@ -44,6 +44,7 @@
   <table id="results" class="table table-fit table-dark">
 
   </table>
+  <div id="error"></div>
 
   <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
@@ -79,6 +80,7 @@
       console.log("Called Find ID");
       event.preventDefault();
       var data = $("#findId").serialize();
+      console.log("Inserting Data ID");
       console.log(data);
       $.ajax({
         url: "/getItemById",
@@ -102,7 +104,6 @@
             html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
             html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
             html += '<input type="hidden" name="icon" value="' + data.icon + '">';
-            //html += '<input type="hidden" name="slot" value="' + data.slot + '">';
             html += '</form></td></tr>';
 
           } else {
@@ -118,7 +119,7 @@
       event.preventDefault();
       console.log("Button clicked " + this.id);
       var data = $("#form-" + this.id).serialize();
-      console.log(data);
+      $(this).closest('tr').remove();
       $.ajax({
         url: "/insertItemDatabase",
         type: "POST",
@@ -126,8 +127,7 @@
         dataType: 'json',
         complete: function (response) {
           let data = JSON.parse(response.responseText).data;
-          console.log(data);
-
+          document.getElementById("error").innerHTML = data.message;
         }
       });
     });

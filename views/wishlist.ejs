@@ -14,7 +14,7 @@
   <!-- STYLESHEET CSS -->
   <link rel="stylesheet" href="css/style.css">
 
-  <script>const whTooltips = {colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: false};</script>
+  <script>const whTooltips = { colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: false };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
 
   <title>Classic Wishlist</title>
@@ -70,9 +70,9 @@
           console.log(data);
           let html = '';
           data.forEach(function (item) {
-            html += '<tr><td><button type="button" class="button btn btn-light btn-lg" id="' + item.id + '">Add</button>'
-            html += '<td><a href="https://classic.wowhead.com/?item=' + item.id + '"><img src="' + item.icon + '"></a></td>';
-            html += '<td class="' + item.quality + '">' + item.name + "</td></tr>";
+            html += `<tr id="${item.id}-row"><td><button type="button" class="button btn btn-light btn-lg" id="${item.id}">Add</button>`;
+            html += `<td><a href="https://classic.wowhead.com/?item=${item.id}"><img src="${item.icon}"></a></td>`;
+            html += `<td class="${item.quality}">${item.name}</td></tr>`;
           });
 
           if (data.length < 1) {
@@ -91,6 +91,7 @@
 
     function displayWishlist() {
       console.log("Getting Wishlist to display...");
+
       $.ajax({
         url: "/getWishlist",
         type: "GET",
@@ -98,17 +99,35 @@
           let wishlist = JSON.parse(response.responseText);
           console.log(wishlist);
           let html = "";
+
           for (var key in wishlist) {
             if (key != 'username' && key != 'id') {
               let icon = "<img src = images/blank.png>";
-              id = wishlist[key];
-              console.log(id);
-              if (id) {
-                icon = `<a href="https://classic.wowhead.com/?item=${id}">${key}</a>`;
-                console.log(icon);
+              let id = wishlist[key];
+              let name = "";
+
+              if (id > 0) {
+                data = 'id=' + id;
+                $.ajax({
+                  url: "/getItemById",
+                  type: "GET",
+                  data: data,
+                  dataType: 'json',
+                  complete: function (response) {
+                    let data = JSON.parse(response.responseText).data;
+                    icon = `<img src = ${data.icon}>`;
+                    name = data.name;
+                    console.log("ICON: " + icon + " KEY: " + key + " NAME: " + name);
+                    html += `<tr><td>${key}</td>`;
+                    html += `<td>${icon}</td>`;
+                    html += `<td>${name}</td></tr>`;
+                  }
+                });
               }
+              console.log("ICON: " + icon + " KEY: " + key + " NAME: " + name);
               html += `<tr><td>${key}</td>`;
-              html += `<td>${icon}</td></tr>`;
+              html += `<td>${icon}</td>`;
+              html += `<td>${name}</td></tr>`;
             }
 
           }
@@ -122,12 +141,14 @@
       console.log("Button clicked " + this.id);
       data = 'id=' + this.id;
       console.log(data);
+      $(this).closest('tr').remove();
       $.ajax({
         url: "/insertItemWishlist",
         type: "POST",
         data: data,
         complete: function (response) {
           displayWishlist();
+
         }
       });
     });
