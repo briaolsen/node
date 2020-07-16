@@ -218,7 +218,7 @@ app.get("/wishlist", verifyLogin, (req, res) => {
   if (req.session && req.session.username) {
     loginStatus = true;
   }
-  res.render("wishlist", { slots: slots, server: this, username: req.session.username, page: "wishlist", loginStatus: loginStatus, user: req.session.username })
+  res.render("wishlist", { slots: slots, server: this, page: "wishlist", loginStatus: loginStatus, username: req.session.username })
 });
 
 /**
@@ -280,7 +280,7 @@ app.get("/getItemByName", (req, res) => {
 
   pool.query(sql, [query.name], function (err, result) {
     if (err) {
-      console.log("Error in query: " + err);
+      console.log("Error in getItemByName query: " + err);
     } else {
       //console.log(result.rows);
       res.json(result.rows);
@@ -316,7 +316,7 @@ app.post("/insertItemDatabase", (req, res) => {
     ],
     function (err, result) {
       if (err) {
-        console.log("Error in query: ");
+        console.log("Error in insertItemDatabase query: ");
         console.log(err);
         status = false;
         message = "Item is already in database.";
@@ -335,15 +335,21 @@ app.post("/insertItemDatabase", (req, res) => {
 /**
  * RETURN AN ITEM FROM A WISHLIST SLOT
  */
-function getItemFromWishlist(slot, username, callback) {
+function getItemFromWishlist(i, username, callback) {
 
-  const sql = `SELECT ${slot} from WISHLIST where username = '${username}';`;
+  //const sql = `SELECT ${slot} from WISHLIST where username = '${username}';`;
+  
+  const sql = `SELECT items.id, items.name, items.icon FROM items INNER JOIN wishlist ON wishlist.username = '${username}' AND items.id = wishlist.${slots[i].slot}`;
 
   pool.query(sql, function (err, result) {
     if (err) {
-      console.log("Error in getDatabase query: ");
+      console.log("User: " + username + "  Slot#: " + i + "  Slot Name: " + slots[i].slot);
+      console.log("Error in getItemFromWishlist query: ");
       console.log(err);
     } else {
+      console.log("User: " + username + "  Slot#: " + i + "  Slot Name: " + slots[i].slot);
+      console.log("Results of getItemFromWishlist: ");
+      console.log(result.rows[0]);
       callback(result.rows[0]);
     }
     

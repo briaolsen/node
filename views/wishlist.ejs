@@ -9,13 +9,17 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
   <!-- AJAX JQUERY -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
   <!-- STYLESHEET CSS -->
   <link rel="stylesheet" href="css/style.css">
 
   <script>const whTooltips = { colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: false };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
+
+
 
   <title>Classic Wishlist</title>
 </head>
@@ -38,7 +42,7 @@
         </form>
       </div>
     </div>
-
+    
     <hr class="my-4">
 
     <div>
@@ -50,6 +54,28 @@
   </div>
 
   <table id="wish-table">
+
+  </table>
+
+  <table>
+    <tr>
+      <th>Item</th>
+      <th>Item Name</th>
+    </tr>
+
+  <% for(var i = 0; i < slots.length; i++) { slots[i].slot; server.getItemFromWishlist(i, username, function(item) {  console.log(item); %>
+    
+    <tr>
+      <td>Hello</td>
+      <% if (typeof item  === 'undefined') { %>
+      <td><img src='images/blank.png'></td>
+      <td></td>
+      <% } else { %> 
+      <td><img src='<%= item.icon %>'></td>
+      <td><%= item.name %></td>
+      <% } %> 
+    </tr>
+  <% }); } %>
 
   </table>
 
@@ -91,7 +117,7 @@
 
     function displayWishlist() {
       console.log("Getting Wishlist to display...");
-
+/*
       $.ajax({
         url: "/getWishlist",
         type: "GET",
@@ -124,6 +150,7 @@
                   }
                 });
               }
+
               console.log("ICON: " + icon + " KEY: " + key + " NAME: " + name);
               html += `<tr><td>${key}</td>`;
               html += `<td>${icon}</td>`;
@@ -133,7 +160,7 @@
           }
           document.getElementById("wish-table").innerHTML = html;
         }
-      });
+      });*/
     }
 
     $(document).on("click", '.button', function (event) {
