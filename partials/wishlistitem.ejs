@@ -1,0 +1,15 @@
+
+<% for(var slot in wishlist) { %>
+<% if (slot != 'username' && slot != 'id' && slot != "trinket2" && slot != "finger2") { %>
+<tr id="<%=slot%>-row">
+  <% if (!wishlist[slot]) { %>
+  <td></td>
+  <td><%=slot%></td>
+  <td><img src="images/blank.png"></td>
+  <% } else { %>
+  <td><button class="rmvbutton btn btn-dark btn-sm" id="<%=slot%>">Remove</button></td>
+  <td><%=slot%></td>
+  <td><a href="https://classic.wowhead.com/?item=<%=wishlist[slot]%>"></a></td>
+  <% } %>
+</tr>
+<% } } %>

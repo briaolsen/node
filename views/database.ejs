@@ -13,13 +13,15 @@
 
   <link rel="stylesheet" type="text/css" href="css/style.css">
 
-  <title>Classic Wishlist</title>
+  <title>WoWishlist Database</title>
 </head>
 
 <body>
 
+  <!-- HEADER -->
   <%- include ('../partials/header') %>
 
+  <!-- ADD TO DATABASE JUMBOTRON -->
   <div class="jumbotron">
     <h1 class="display-4">Item Database</h1>
     <img src="">
@@ -27,38 +29,36 @@
     <hr class="my-4">
     <div class="col-5">
       <form id="findId">
-      <label for="id">Item ID</label>
-      <input type="text" id="id" name="id" class="form-control"><br>
-      <button type="submit" class="btn btn-dark btn-lg">Find Item by ID</button>
-    </form>
+        <label for="id">Item ID</label>
+        <input type="text" id="id" name="id" class="form-control"><br>
+        <button type="submit" class="btn btn-dark btn-lg">Find Item by ID</button>
+      </form>
     </div>
-    
-    <hr class="my-4">
-    <div>
-      <table id="itemInfo" class="table table-borderless table-dark">
 
-      </table>
-    </div>
+    <hr class="my-4">
+
+    <!-- SEARCH RESULTS TABLE -->
+    <table id="itemInfo" class="table table-borderless table-dark"></table>
+    <div id="error"></div>
   </div>
 
-  <table id="results" class="table table-fit table-dark">
+  <!-- DATABASE TABLE -->
+  <table id="results" class="table table-fit table-dark"></table>
 
-  </table>
-  <div id="error"></div>
 
   <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
 
   <script>
 
-    $(document).ready(function () {
+    // RETURNS THE DATABASE AND PRINTS IT TO THE SCREEN WHEN PAGE IS LOADED
+    function getDatabase() {
       $.ajax({
         url: "/getDatabase",
         type: "GET",
         dataType: 'json',
         complete: function (response) {
           let data = JSON.parse(response.responseText);
-          console.log(data);
           let html = '';
           html = '<tr><th colspan="3">Item Database</th></tr>'
           data.forEach(function (item) {
@@ -68,20 +68,22 @@
             html += '<td class="' + item.quality + ' quality">' + item.name + '</td>';
             html += '</tr>';
           });
-
-          console.log(html);
           $('#results').html(html);
-
         }
       });
+    }
+
+    $(document).ready(function () {
+      getDatabase();
     });
 
+    // SEARCHES FOR AN ITEM ID AND SHOWS THE RESULTS
     $("#findId").on('submit', function (event) {
       console.log("Called Find ID");
       event.preventDefault();
       var data = $("#findId").serialize();
-      console.log("Inserting Data ID");
-      console.log(data);
+      $('#error').html('');
+      //console.log(data);
       $.ajax({
         url: "/getItemById",
         type: "GET",
@@ -89,14 +91,12 @@
         dataType: 'json',
         complete: function (response) {
           let data = JSON.parse(response.responseText).data;
-          console.log(data);
+          //console.log(data);
           let html = '';
 
           if (data != null) {
-            html += '<tr><td><form id="form-'+data.id+'"><button type="button" class="button btn btn-light btn-lg" id='+data.id+'>Insert Item</button></td>';
-            html += '<td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
-            html += '<td class="' + data.quality + ' quality">' + data.name + '</td>';
-            html += '<td><input type="hidden" name="id" value="' + data.id + '">';
+            html += '<tr><td><form id="form-' + data.id + '"><button type="button" class="button btn btn-light btn-lg" id=' + data.id + '>Insert Item</button>';
+            html += '<input type="hidden" name="id" value="' + data.id + '">';
             html += '<input type="hidden" name="name" value="' + data.name + '">';
             html += '<input type="hidden" name="quality" value="' + data.quality + '">';
             html += '<input type="hidden" name="itemClass" value="' + data.itemClass + '">';
@@ -104,35 +104,52 @@
             html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
             html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
             html += '<input type="hidden" name="icon" value="' + data.icon + '">';
-            html += '</form></td></tr>';
+            html += '</form></td>';
+            html += '<td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
+            html += '<td class="' + data.quality + ' quality">' + data.name + '</td></tr>';
 
           } else {
-            html = 'Item not found.';
+            $('#error').html('Item not found.');
           }
-          
           $('#itemInfo').html(html);
         }
       });
     });
 
+    // ADD A SEARCHED ITEM TO THE DATABASE
     $(document).on("click", '.button', function (event) {
       event.preventDefault();
       console.log("Button clicked " + this.id);
-      var data = $("#form-" + this.id).serialize();
+      var data = $(`#form-${this.id}`).serialize();
+      console.log("Data " + this.id);
+      console.log(data);
       $(this).closest('tr').remove();
+      $('#error').html('');
       $.ajax({
         url: "/insertItemDatabase",
         type: "POST",
         data: data,
         dataType: 'json',
         complete: function (response) {
-          let data = JSON.parse(response.responseText).data;
-          document.getElementById("error").innerHTML = data.message;
+          let data = JSON.parse(response.responseText);
+          console.log(data);
+          $('#error').html(data.message);
+          getDatabase();
         }
       });
     });
 
   </script>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>

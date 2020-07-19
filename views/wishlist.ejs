@@ -16,22 +16,23 @@
   <!-- STYLESHEET CSS -->
   <link rel="stylesheet" href="css/style.css">
 
-  <script>const whTooltips = { colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: false };</script>
+  <!-- TOOPTIP SCRIPTS -->
+  <script>const whTooltips = { colorLinks: true, iconizeLinks: true, iconSize: 'large', renameLinks: true };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
 
-
-
-  <title>Classic Wishlist</title>
+  <title>WoWishlist</title>
 </head>
 
 <body>
 
+  <!-- HEADER -->
   <%- include ('../partials/header') %>
 
+  <!-- ADD TO THE WISHLIST JUMBOTRON -->
   <div class="jumbotron">
-    <h1 class="display-4">Wishlist</h1>
+    <h1 class="display-4"><%=username%>'s Wishlist</h1>
     <img src="">
-    <p class="lead">Add an item to your wishlist.</p>
+    <p class="lead">Search for an item and add it to your wishlist.</p>
     <hr class="my-4">
     <div class="row">
       <div class="col-5">
@@ -42,50 +43,30 @@
         </form>
       </div>
     </div>
-    
+
     <hr class="my-4">
 
     <div>
-
       <table id="itemInfo" class="table table-fit table-dark">
       </table>
-
     </div>
   </div>
 
-  <table id="wish-table">
+  <!-- WISHLIST -->
 
+  <table id="wish-table" class="bg-light">
+    <%- include ('../partials/wishlistitem') %>
   </table>
 
-  <table>
-    <tr>
-      <th>Item</th>
-      <th>Item Name</th>
-    </tr>
 
-  <% for(var i = 0; i < slots.length; i++) { slots[i].slot; server.getItemFromWishlist(i, username, function(item) {  console.log(item); %>
-    
-    <tr>
-      <td>Hello</td>
-      <% if (typeof item  === 'undefined') { %>
-      <td><img src='images/blank.png'></td>
-      <td></td>
-      <% } else { %> 
-      <td><img src='<%= item.icon %>'></td>
-      <td><%= item.name %></td>
-      <% } %> 
-    </tr>
-  <% }); } %>
-
-  </table>
-
+  <!-- JAVASCRIPT -->
   <script>
 
+    // FINDS AN ITEM IN THE DATABASE 
     $("#findName").on('submit', function (event) {
       console.log("Called Find Name");
       event.preventDefault();
       var data = $("#findName").serialize();
-      console.log(data);
       $.ajax({
         url: "/getItemByName",
         type: "GET",
@@ -93,12 +74,13 @@
         dataType: 'json',
         complete: function (response) {
           let data = JSON.parse(response.responseText);
-          console.log(data);
           let html = '';
           data.forEach(function (item) {
+            // shows item and button to add it to the wishlist
             html += `<tr id="${item.id}-row"><td><button type="button" class="button btn btn-light btn-lg" id="${item.id}">Add</button>`;
-            html += `<td><a href="https://classic.wowhead.com/?item=${item.id}"><img src="${item.icon}"></a></td>`;
-            html += `<td class="${item.quality}">${item.name}</td></tr>`;
+            html += `<td><a href="https://classic.wowhead.com/?item=${item.id}"><img src="${item.icon}"></a></td></tr>`;
+
+            loadScript();
           });
 
           if (data.length < 1) {
@@ -106,81 +88,74 @@
           } else {
             $('#itemInfo').html(html);
           }
-
         }
       });
     });
 
-    $(document).ready(function (event) {
-      displayWishlist();
-    });
-
-    function displayWishlist() {
-      console.log("Getting Wishlist to display...");
-/*
-      $.ajax({
-        url: "/getWishlist",
-        type: "GET",
-        complete: function (response) {
-          let wishlist = JSON.parse(response.responseText);
-          console.log(wishlist);
-          let html = "";
-
-          for (var key in wishlist) {
-            if (key != 'username' && key != 'id') {
-              let icon = "<img src = images/blank.png>";
-              let id = wishlist[key];
-              let name = "";
-
-              if (id > 0) {
-                data = 'id=' + id;
-                $.ajax({
-                  url: "/getItemById",
-                  type: "GET",
-                  data: data,
-                  dataType: 'json',
-                  complete: function (response) {
-                    let data = JSON.parse(response.responseText).data;
-                    icon = `<img src = ${data.icon}>`;
-                    name = data.name;
-                    console.log("ICON: " + icon + " KEY: " + key + " NAME: " + name);
-                    html += `<tr><td>${key}</td>`;
-                    html += `<td>${icon}</td>`;
-                    html += `<td>${name}</td></tr>`;
-                  }
-                });
-              }
-
-              console.log("ICON: " + icon + " KEY: " + key + " NAME: " + name);
-              html += `<tr><td>${key}</td>`;
-              html += `<td>${icon}</td>`;
-              html += `<td>${name}</td></tr>`;
-            }
-
-          }
-          document.getElementById("wish-table").innerHTML = html;
-        }
-      });*/
-    }
-
+    // INSERTS AN ITEM INTO THE WISHLIST AND SHOWS IT IN THE CORRECT SLOT
     $(document).on("click", '.button', function (event) {
       event.preventDefault();
       console.log("Button clicked " + this.id);
       data = 'id=' + this.id;
-      console.log(data);
       $(this).closest('tr').remove();
       $.ajax({
         url: "/insertItemWishlist",
         type: "POST",
         data: data,
         complete: function (response) {
-          displayWishlist();
-
+          let data = JSON.parse(response.responseText);
+          let row = `<td><button class="rmvbutton btn btn-dark btn-sm" id="${data.slot}">Remove</button></td><td>${data.slot}</td><td><a href="https://classic.wowhead.com/?item=${data.id}"></a></td>`;
+          document.getElementById(`${data.slot}-row`).innerHTML = row;
+          loadScript();
         }
       });
     });
 
+    // REMOVES AN ITEM FROM THE WISHLIST AND REMOVES IT FROM THE SLOT
+    $(document).on("click", '.rmvbutton', function (event) {
+      event.preventDefault();
+      data = 'slot=' + this.id;
+
+      $(this).closest('tr').html(`<td></td><td>${this.id}</td><td><img src ="images/blank.png"></td></tr>`);
+
+      $.ajax({
+        url: "/removeItemWishlist",
+        type: "POST",
+        data: data,
+        complete: function (response) {
+        }
+      });
+    });
+
+    // RELOADS THE SCRIPT TO MAKE THE TOOLTIP SHOW UP
+    function loadScript() {
+      var head = document.getElementsByTagName('head')[0];
+      var script = document.createElement('script');
+      script.src = 'https://wow.zamimg.com/widgets/power.js';
+      head.appendChild(script);
+
+      head = document.getElementsByTagName('head')[0];
+      script = document.createElement('script');
+      script.src = 'https://wow.zamimg.com/js/basic.js?34';
+      head.appendChild(script);
+
+      head = document.getElementsByTagName('head')[0];
+      script = document.createElement('script');
+      script.src = 'https://wow.zamimg.com/js/global/WH/Icon.js?2';
+      head.appendChild(script);
+    }
+
   </script>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
 
 </body>
 

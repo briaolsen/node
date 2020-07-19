@@ -13,12 +13,15 @@
   <!-- AJAX JQUERY-->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
-  <title>WoWishlist</title>
+  <title>WoWishlist Home</title>
 </head>
 
 <body>
+
+  <!-- HEADER -->
   <%- include ('../partials/header') %>
 
+  <!-- IF NOT LOGGED IN PROMPT FOR USER TO LOG IN -->
   <% if (!loginStatus) { %>
   <div class="jumbotron">
     <h1 class="display-4" id="welcome">Welcome to WoWishlist!</h1>
@@ -50,9 +53,10 @@
       </div>
     </div>
   </div>
+  <!-- IF LOGGED IN, WELCOME USER -->
   <% } else { %>
   <div class="jumbotron">
-    <h1 class="display-4" id="welcome2">Welcome <%= user %>!</h1>
+    <h1 class="display-4" id="welcome2">Welcome <%= username %>!</h1>
     <img src="">
     <p class="lead" id="welcome2-text">Search through the database and add items to your wishlist!</p>
     <hr class="my-4">
@@ -62,6 +66,7 @@
 
   <script>
 
+    // LOGIN USER
     function login() {
       console.log("Submitted Login Info");
       var username = $("#username").val();
@@ -89,6 +94,8 @@
       });
     };
 
+
+    // CREATE AN ACCOUNT AND LOGIN 
     function createAccount() {
       console.log("Submitted New Account Info");
       var username = $("#username2").val();

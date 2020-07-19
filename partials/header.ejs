@@ -1,3 +1,6 @@
+<!-- HEADER
+      only shows Database and Wishlist tabs when logged in
+-->
 <% if (loginStatus) { %>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="/">Home</a>
@@ -15,7 +18,7 @@
         <a class="nav-link <% if (page === 'wishlist') { %> active <% } %>" href="/wishlist">Wishlist</a>
       </li>
 
-      <button class="btn btn-outline-dark float-right" onclick="logout();">Logout</button>
+      <button class="btn btn-outline-dark float-right" onclick="logout();">Logout <%=username%></button>
 
     </ul>
   </div>
@@ -32,6 +35,7 @@
 <% } %>
 
 <script>
+  // Logs out the current user and reloads home page
   function logout() {
     $.ajax({
       url: "/logout",

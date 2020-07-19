@@ -3,7 +3,7 @@ const express = require("express");
 const url = require("url");
 const path = require("path");
 const dotenv = require("dotenv");
-const { get } = require("http");
+//const { get } = require("http");
 const bodyParser = require("body-parser");
 dotenv.config();
 request = require("request");
@@ -35,6 +35,7 @@ const pool = new Pool({
   },
 });
 
+// ARRAY OF POTENTIAL SLOTS AND WHAT THEY COULD BE CALLED
 const slots = [
   { slot: "Head", name: ["Head"] },
   { slot: "Neck", name: ["Neck"] },
@@ -46,35 +47,13 @@ const slots = [
   { slot: "Waist", name: ["Waist"] },
   { slot: "Legs", name: ["Legs"] },
   { slot: "Feet", name: ["Feet"] },
-  { slot: "Finger1", name: ["Finger"] },
-  { slot: "Finger2", name: ["Finger"] },
-  { slot: "Trinket1", name: ["Trinket"] },
-  { slot: "Trinket2", name: ["Trinket"] },
+  { slot: "Finger", name: ["Finger"] },
+  { slot: "Trinket", name: ["Trinket"] },
   { slot: "Mainhand", name: ["Two-Hand", "One-Hand", "Main Hand"] },
-  { slot: "Offhand", name: ["One-Hand", "Held in Off-hand", "Off Hand"] },
+  { slot: "Offhand", name: ["One-Hand", "Held In Off-hand", "Off Hand"] },
   { slot: "Ranged", name: ["RANGEDRIGHT", "Relic"] },
   { slot: "Quiver", name: ["Bag"] },
 ];
-
-// WISHLIST FROM DATABASE
-const wishlist = {
-  name: "Fiyre",
-  items:
-    [
-      {
-        slot: "Shoulder", item: {
-          id: 16932,
-          name: 'Nemesis Spaulders',
-          quality: 'EPIC',
-          itemclass: 'Armor',
-          itemsubclass: 'Cloth',
-          inventorytype: 'SHOULDER',
-          inventoryname: 'Shoulder',
-          icon: 'https://render-classic-us.worldofwarcraft.com/icons/56/inv_shoulder_19.jpg'
-        }
-      }
-    ]
-};
 
 /**
  * Setup the session store
@@ -106,26 +85,26 @@ var verifyLogin = function (req, res, next) {
   }
 };
 
-
 /**
  * Default Page
  */
 app.get("/", (req, res) => {
-
   if (req.session && req.session.username) {
     console.log(req.session.username);
-    res.render("home", { page: "home", user: req.session.username, loginStatus: true });
-  }
-  else {
+    res.render("home", {
+      page: "home",
+      username: req.session.username,
+      loginStatus: true,
+    });
+  } else {
     res.render("home", { page: "home", loginStatus: false });
   }
-
 });
 
 /**
  * USER LOGOUT
  */
-app.post('/logout', function (req, res) {
+app.post("/logout", function (req, res) {
   if (req.session && req.session.username) {
     delete req.session.username;
     res.render("home", { page: "home", loginStatus: false });
@@ -138,7 +117,6 @@ app.post('/logout', function (req, res) {
  * USER LOGIN
  */
 app.post("/login", (req, results) => {
-
   const username = req.body.username;
   const password = req.body.password;
   console.log("attempting login...");
@@ -162,8 +140,12 @@ app.post("/login", (req, results) => {
         } else {
           message = "Login Unsuccessful";
         }
-        results.json({ success: loginStatus, message: message, username: req.session.username });
-      })
+        results.json({
+          success: loginStatus,
+          message: message,
+          username: req.session.username,
+        });
+      });
     }
   });
 });
@@ -179,12 +161,10 @@ app.post("/createAccount", (req, res) => {
   let message = "Error creating account";
 
   bcrypt.hash(password, saltRounds, (err, hash) => {
-
     const sql = `INSERT INTO users VALUES ($1, $2)`;
     let message = "";
 
     pool.query(sql, [username, hash], function (err, result) {
-
       if (err) {
         console.log("Unable to create account");
         console.log(err);
@@ -196,15 +176,17 @@ app.post("/createAccount", (req, res) => {
         req.session.username = username;
         message = "User " + req.session.username + " created.";
 
-        createWishlist(req.session.username, function(wishListID) {
+        createWishlist(req.session.username, function (wishListID) {
           console.log("Created Wishlist with ID: " + wishListID);
           req.session.wishlistID = wishListID;
           console.log("Session.Wishlist: " + req.session.wishlistID);
         });
-        res.json({ success: loginStatus, message: message, username: req.session.username });
+        res.json({
+          success: loginStatus,
+          message: message,
+          username: req.session.username,
+        });
       }
-      
-      
     });
   });
 });
@@ -218,7 +200,22 @@ app.get("/wishlist", verifyLogin, (req, res) => {
   if (req.session && req.session.username) {
     loginStatus = true;
   }
-  res.render("wishlist", { slots: slots, server: this, page: "wishlist", loginStatus: loginStatus, username: req.session.username })
+
+  let wishlist = "";
+
+  getWishlist(req.session.username, function (data) {
+    wishlist = data;
+    console.log("here is my wishlist: ");
+    console.log(wishlist);
+    res.render("wishlist", {
+      slots: slots,
+      server: this,
+      page: "wishlist",
+      loginStatus: loginStatus,
+      username: req.session.username,
+      wishlist: wishlist,
+    });
+  });
 });
 
 /**
@@ -229,7 +226,7 @@ app.get("/database", verifyLogin, (req, res) => {
   if (req.session && req.session.username) {
     loginStatus = true;
   }
-  res.render("database", { page: "database", loginStatus: loginStatus })
+  res.render("database", { page: "database", loginStatus: loginStatus, username: req.session.username});
 });
 
 /**
@@ -246,7 +243,7 @@ app.get("/getItemById", async (req, res) => {
       const data = await api.query(
         "/data/wow/item/" + id + "?namespace=static-classic-us&locale=en_US"
       );
-      console.log(data);
+      //console.log(data);
 
       params.id = data.id;
       params.name = data.name;
@@ -312,49 +309,25 @@ app.post("/insertItemDatabase", (req, res) => {
       data.itemSubclass,
       data.inventoryType,
       data.inventoryName,
-      data.icon
+      data.icon,
     ],
     function (err, result) {
       if (err) {
         console.log("Error in insertItemDatabase query: ");
         console.log(err);
         status = false;
-        message = "Item is already in database.";
+        message = "Error. Item is either already in the database or does not exist.";
+        res.json({ status: status, message: message });
       } else {
         //res.redirect("database");
         status = true;
         message = "Item added to database";
+        res.json({ status: status, message: message });
       }
     }
   );
-
-  res.json({status: status, message: message})
-});
-
-
-/**
- * RETURN AN ITEM FROM A WISHLIST SLOT
- */
-function getItemFromWishlist(i, username, callback) {
-
-  //const sql = `SELECT ${slot} from WISHLIST where username = '${username}';`;
   
-  const sql = `SELECT items.id, items.name, items.icon FROM items INNER JOIN wishlist ON wishlist.username = '${username}' AND items.id = wishlist.${slots[i].slot}`;
-
-  pool.query(sql, function (err, result) {
-    if (err) {
-      console.log("User: " + username + "  Slot#: " + i + "  Slot Name: " + slots[i].slot);
-      console.log("Error in getItemFromWishlist query: ");
-      console.log(err);
-    } else {
-      console.log("User: " + username + "  Slot#: " + i + "  Slot Name: " + slots[i].slot);
-      console.log("Results of getItemFromWishlist: ");
-      console.log(result.rows[0]);
-      callback(result.rows[0]);
-    }
-    
-  });
-}
+});
 
 /**
  * RETURN THE ITEM DATABASE
@@ -372,26 +345,24 @@ app.get("/getDatabase", (req, res) => {
 });
 
 /**
- * RETURN THE WIHLIST
+ * RETURN THE WISHLIST
  */
-app.get("/getWishlist", (req, res) => {
-  const sql = `SELECT * FROM wishlist WHERE username = '${req.session.username}'`;
+function getWishlist(username, callback) {
+  const sql = `SELECT * FROM wishlist WHERE username = '${username}'`;
   pool.query(sql, function (err, result) {
     if (err) {
       console.log("Error in getWishlist query: ");
       console.log(err);
     } else {
-      res.json(result.rows[0]);
+      callback(result.rows[0]);
     }
   });
-});
-
+}
 
 /**
  * FIND THE SLOT THE ITEM SHOULD BE INSERTED INTO
  */
 function getSlot(id, callback) {
-
   const sql = `SELECT * FROM items WHERE id = ${id}`;
   let type = "";
   let name = "";
@@ -402,11 +373,11 @@ function getSlot(id, callback) {
     } else {
       type = result.rows[0].inventorytype;
       name = result.rows[0].inventoryname;
-      console.log("1Type: " + type + " Name: " + name);
+      //console.log("1Type: " + type + " Name: " + name);
 
       for (var i = 0; i < slots.length; i++) {
         if (slots[i].name.includes(type) || slots[i].name.includes(name)) {
-          console.log("Found slot!");
+          //console.log("Found slot!");
           callback(slots[i].slot);
         }
       }
@@ -417,30 +388,46 @@ function getSlot(id, callback) {
 /**
  * INSERT ITEM INTO WISHLIST
  */
-app.post("/insertItemWishlist", async function (req, res) {
+app.post("/insertItemWishlist", function (req, res) {
   console.log("Item is being inserted into wishlist...");
-  console.log(req.body);
+  //console.log(req.body);
   const data = req.body;
   getSlot(data.id, function (slot) {
     slot = slot.toLowerCase();
     console.log("Slot: " + slot);
     const sql = `UPDATE wishlist SET ${slot} = ${data.id} WHERE username = '${req.session.username}' RETURNING *;`;
-    
-    pool.query(
-      sql, 
-      function (err, result) {
-        if (err) {
-          console.log("Error in insertItemWishlist query: ");
-          console.log(err);
-        } else {
-          console.log("Item inserted into wishlist.");
-          res.json(result.rows);
-        }
+
+    pool.query(sql, function (err, result) {
+      if (err) {
+        console.log("Error in insertItemWishlist query: ");
+        console.log(err);
+      } else {
+        console.log("Item inserted into wishlist.");
+        res.json({slot: slot, id: data.id});
       }
-    );
+    });
   });
 });
 
+/**
+ * REMOVE ITEM FROM WISHLIST
+ */
+app.post("/removeItemWishlist", async function (req, res) {
+  console.log("Item is being removed from wishlist...");
+  //console.log(req.body);
+  const slot = req.body.slot;
+
+  const sql = `UPDATE wishlist SET ${slot} = NULL WHERE username = '${req.session.username}';`;
+
+  pool.query(sql, function (err, result) {
+    if (err) {
+      console.log("Error in removeItemWishlist query: ");
+      console.log(err);
+    } else {
+      console.log("Item removed from wishlist.");
+    }
+  });
+});
 
 /**
  * CREATE A WISHLIST FOR THE USERNAME
@@ -451,7 +438,6 @@ function createWishlist(username, callback) {
   const sql = `INSERT INTO wishlist (username) VALUES ($1) RETURNING id`;
 
   pool.query(sql, [username], function (err, result) {
-
     if (err) {
       console.log("Error in createWishlist query: ");
       console.log(err);
@@ -465,4 +451,3 @@ app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
 
-module.exports.getItemFromWishlist = getItemFromWishlist;

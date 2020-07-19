@@ -14,21 +14,30 @@ table.table-fit tr {
     height: auto !important;
 }
 
+#itemInfo {
+    margin: 5px;
+}
+
 #results th {
     font-size: 24px;
 }
 
-#wishlist-table th {
+#wish-table th {
     font-size: 24px;
 }
 
-#wishlist-table {
+#wish-table td {
+    padding: 5px;
+}
+
+
+#wish-table {
     width: auto !important;
     height: auto !important;
     margin-left: 30px;
 }
 
-#wishlist-table tr {
+#wish-table tr {
     margin: 50px;
 }
 
