@@ -1,11 +1,16 @@
 
+<!-- Goes through each slot in the wishlist and prints either a blank box
+     if there is nothing in the slot or the item
+ -->
 <% for(var slot in wishlist) { %>
 <% if (slot != 'username' && slot != 'id' && slot != "trinket2" && slot != "finger2") { %>
 <tr id="<%=slot%>-row">
+  <!--If nothing in wishlist slot, print blank image-->
   <% if (!wishlist[slot]) { %>
   <td></td>
   <td><%=slot%></td>
   <td><img src="images/blank.png"></td>
+  <!--Else, Print wishlist slot with remove button-->
   <% } else { %>
   <td><button class="rmvbutton btn btn-dark btn-sm" id="<%=slot%>">Remove</button></td>
   <td><%=slot%></td>

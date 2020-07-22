@@ -25,6 +25,7 @@ const api = new BlizzAPI({
 const { Pool } = require("pg");
 const { doesNotMatch } = require("assert");
 const { resolveSoa } = require("dns");
+const { checkServerIdentity } = require("tls");
 const connectionString =
   process.env.DATABASE_URL ||
   "postgres://zvscnytvvthqcg:3976c888faa915b2940ddfe8223991fcc926aecaa2cc9a4a6877022af6b357a4@ec2-50-17-90-177.compute-1.amazonaws.com:5432/dcn3hmphnedhed";
@@ -87,6 +88,7 @@ var verifyLogin = function (req, res, next) {
 
 /**
  * Default Page
+ * - render home.ejs depending on login status
  */
 app.get("/", (req, res) => {
   if (req.session && req.session.username) {
@@ -103,6 +105,7 @@ app.get("/", (req, res) => {
 
 /**
  * USER LOGOUT
+ * - logs out the user and sends them to the home page
  */
 app.post("/logout", function (req, res) {
   if (req.session && req.session.username) {
@@ -115,6 +118,8 @@ app.post("/logout", function (req, res) {
 
 /**
  * USER LOGIN
+ * - checks username and password from the database
+ * - sends the username and results back to the home page
  */
 app.post("/login", (req, results) => {
   const username = req.body.username;
@@ -124,6 +129,7 @@ app.post("/login", (req, results) => {
   let message = "";
   const sql = `SELECT * FROM users WHERE username = $1`;
 
+  // checks for username and password combo in database
   pool.query(sql, [username], function (err, result) {
     if (err) {
       console.log("User not found");
@@ -132,6 +138,7 @@ app.post("/login", (req, results) => {
       message = "Error in login";
       return false;
     } else {
+      // compare username and password with database results
       bcrypt.compare(password, result.rows[0].hash, function (err, res) {
         loginStatus = res;
         if (loginStatus) {
@@ -152,30 +159,39 @@ app.post("/login", (req, results) => {
 
 /**
  * CREATE AN ACCOUNT
+ * - creates an account with a new username and password
+ * - logs the user in once created
+ * - also creates a new empty wishlist for that account
  */
 app.post("/createAccount", (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
+
   console.log("Username: " + username + " Password: " + password);
   let loginStatus = false;
   let message = "Error creating account";
 
+  // creates a hash for the password
   bcrypt.hash(password, saltRounds, (err, hash) => {
     const sql = `INSERT INTO users VALUES ($1, $2)`;
     let message = "";
 
+    // attempts to insert username and password into database
     pool.query(sql, [username, hash], function (err, result) {
       if (err) {
+        // username/password unavailable
         console.log("Unable to create account");
         console.log(err);
         message = "Username unavailable";
         loginStatus = false;
         res.json({ success: loginStatus, message: message, username: null });
       } else {
+        // logs in user
         loginStatus = true;
         req.session.username = username;
         message = "User " + req.session.username + " created.";
 
+        // create a new wishlist for a new account
         createWishlist(req.session.username, function (wishListID) {
           console.log("Created Wishlist with ID: " + wishListID);
           req.session.wishlistID = wishListID;
@@ -193,8 +209,11 @@ app.post("/createAccount", (req, res) => {
 
 /**
  * GET WISHLIST PAGE
+ * - returns the wishlist to the page so it can be
+ * - shown on the UI
  */
 app.get("/wishlist", verifyLogin, (req, res) => {
+  // checks to see if user is signed in
   console.log(req.session.wishlistID);
   let loginStatus = false;
   if (req.session && req.session.username) {
@@ -203,6 +222,8 @@ app.get("/wishlist", verifyLogin, (req, res) => {
 
   let wishlist = "";
 
+  // returns the wishlist, slots array, login status, username,
+  // and current user's wishlist
   getWishlist(req.session.username, function (data) {
     wishlist = data;
     console.log("here is my wishlist: ");
@@ -220,6 +241,7 @@ app.get("/wishlist", verifyLogin, (req, res) => {
 
 /**
  * GET DATABASE PAGE
+ * - renders the database on the database page
  */
 app.get("/database", verifyLogin, (req, res) => {
   let loginStatus = false;
@@ -230,7 +252,23 @@ app.get("/database", verifyLogin, (req, res) => {
 });
 
 /**
+ * RETURN THE ITEM DATABASE
+ * - returns all items in the database
+ */
+app.get("/getDatabase", (req, res) => {
+  const sql = "SELECT * FROM items";
+  pool.query(sql, function (err, result) {
+    if (err) {
+      console.log("Error in getDatabase query: ");
+      console.log(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+/**
  * SEARCH ITEM BY ID USING BLIZZARD API
+ * - uses blizzard api to look for particular item by id
  */
 app.get("/getItemById", async (req, res) => {
   const parts = url.parse(req.url, true);
@@ -239,12 +277,14 @@ app.get("/getItemById", async (req, res) => {
   console.log(id);
   let params = {};
   try {
+
+    // queries the blizzard api for item
     if (id) {
       const data = await api.query(
         "/data/wow/item/" + id + "?namespace=static-classic-us&locale=en_US"
       );
-      //console.log(data);
 
+      // stores item information in parameters
       params.id = data.id;
       params.name = data.name;
       params.quality = data.quality.type;
@@ -253,22 +293,26 @@ app.get("/getItemById", async (req, res) => {
       params.inventoryType = data.inventory_type.type;
       params.inventoryName = data.inventory_type.name;
 
+      // gets the icon image address from other blizzard api
       const icon = await api.query(
         `/data/wow/media/item/${data.id}?namespace=static-classic-us&locale=en_US`
       );
       params.icon = icon.assets[0].value;
 
+      // returns the item information
       res.json({ status: "success", data: params });
     } else {
       res.json({ status: "error", message: "Please enter an id" });
     }
   } catch {
+    // query fails 
     res.json({ status: "error", message: `Not a valid id: ${id}` });
   }
 });
 
 /**
  * GET ITEM BY NAME FROM DATABASE
+ * - queries app database for item looking by name and returns results
  */
 app.get("/getItemByName", (req, res) => {
   const parts = url.parse(req.url, true);
@@ -279,7 +323,6 @@ app.get("/getItemByName", (req, res) => {
     if (err) {
       console.log("Error in getItemByName query: " + err);
     } else {
-      //console.log(result.rows);
       res.json(result.rows);
     }
   });
@@ -287,13 +330,11 @@ app.get("/getItemByName", (req, res) => {
 
 /**
  * INSERT ITEM INTO DATABASE
+ * - inserts the item into the database using all the params from request
  */
 app.post("/insertItemDatabase", (req, res) => {
   console.log("Item is being inserted...");
-  console.log(req.body);
   const data = req.body;
-  console.log(data.id);
-  console.log(data.slot);
   let status = false;
   let message = "";
 
@@ -313,13 +354,13 @@ app.post("/insertItemDatabase", (req, res) => {
     ],
     function (err, result) {
       if (err) {
+        // Error in query
         console.log("Error in insertItemDatabase query: ");
         console.log(err);
         status = false;
         message = "Error. Item is either already in the database or does not exist.";
         res.json({ status: status, message: message });
       } else {
-        //res.redirect("database");
         status = true;
         message = "Item added to database";
         res.json({ status: status, message: message });
@@ -330,22 +371,8 @@ app.post("/insertItemDatabase", (req, res) => {
 });
 
 /**
- * RETURN THE ITEM DATABASE
- */
-app.get("/getDatabase", (req, res) => {
-  const sql = "SELECT * FROM items";
-  pool.query(sql, function (err, result) {
-    if (err) {
-      console.log("Error in getDatabase query: ");
-      console.log(err);
-    }
-    //console.log(result.rows);
-    res.json(result.rows);
-  });
-});
-
-/**
  * RETURN THE WISHLIST
+ * - queries database for user's wishlist
  */
 function getWishlist(username, callback) {
   const sql = `SELECT * FROM wishlist WHERE username = '${username}'`;
@@ -360,7 +387,9 @@ function getWishlist(username, callback) {
 }
 
 /**
- * FIND THE SLOT THE ITEM SHOULD BE INSERTED INTO
+ * GET SLOT
+ * - finds the slot the item should be inserted into
+ * - uses the slots array 
  */
 function getSlot(id, callback) {
   const sql = `SELECT * FROM items WHERE id = ${id}`;
@@ -371,13 +400,13 @@ function getSlot(id, callback) {
     if (err) {
       console.log("Error in getSlot query: " + err);
     } else {
+      // item will be in slot according to either inventory type or name
       type = result.rows[0].inventorytype;
       name = result.rows[0].inventoryname;
-      //console.log("1Type: " + type + " Name: " + name);
 
+      // returns the slot if found in the slots array
       for (var i = 0; i < slots.length; i++) {
         if (slots[i].name.includes(type) || slots[i].name.includes(name)) {
-          //console.log("Found slot!");
           callback(slots[i].slot);
         }
       }
@@ -387,14 +416,14 @@ function getSlot(id, callback) {
 
 /**
  * INSERT ITEM INTO WISHLIST
+ * - inserts the item into the wishlist
  */
 app.post("/insertItemWishlist", function (req, res) {
   console.log("Item is being inserted into wishlist...");
-  //console.log(req.body);
   const data = req.body;
   getSlot(data.id, function (slot) {
+    // updates the user's wishlist in the correct slot column
     slot = slot.toLowerCase();
-    console.log("Slot: " + slot);
     const sql = `UPDATE wishlist SET ${slot} = ${data.id} WHERE username = '${req.session.username}' RETURNING *;`;
 
     pool.query(sql, function (err, result) {
@@ -402,6 +431,7 @@ app.post("/insertItemWishlist", function (req, res) {
         console.log("Error in insertItemWishlist query: ");
         console.log(err);
       } else {
+        // returns the id of the item inserted into the wishlist to update UI
         console.log("Item inserted into wishlist.");
         res.json({slot: slot, id: data.id});
       }
@@ -411,10 +441,10 @@ app.post("/insertItemWishlist", function (req, res) {
 
 /**
  * REMOVE ITEM FROM WISHLIST
+ * - removes an item from the user's wishlist by setting column to null
  */
 app.post("/removeItemWishlist", async function (req, res) {
   console.log("Item is being removed from wishlist...");
-  //console.log(req.body);
   const slot = req.body.slot;
 
   const sql = `UPDATE wishlist SET ${slot} = NULL WHERE username = '${req.session.username}';`;
@@ -430,7 +460,8 @@ app.post("/removeItemWishlist", async function (req, res) {
 });
 
 /**
- * CREATE A WISHLIST FOR THE USERNAME
+ * CREATE A WISHLIST
+ * - creates a new wishlist for a brand new user
  */
 function createWishlist(username, callback) {
   console.log("Creating wishlist...");

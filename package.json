@@ -18,6 +18,7 @@
     "express-session": "^1.17.1",
     "pg": "^8.2.1",
     "request": "^2.88.2",
+    "sanitize": "^2.1.0",
     "session-file-store": "^1.4.0"
   },
   "devDependencies": {

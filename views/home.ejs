@@ -30,6 +30,8 @@
     <hr class="my-4">
     <div id="login-div" class="container">
       <div class="row">
+
+        <!--User Login message-->
         <div class="col-sm">
           <p>Please login with your character name and password.</p>
           <label for="username">Character</label><br>
@@ -40,6 +42,7 @@
           <br><br><span id="loginErr"></span><br><br>
         </div>
 
+        <!-- Create a wishlist option -->
         <div class="col-sm">
           <p>Don't have a wishlist yet? Create a new account!</p>
           <label for="username2">Character</label><br>
@@ -53,7 +56,8 @@
       </div>
     </div>
   </div>
-  <!-- IF LOGGED IN, WELCOME USER -->
+
+  <!-- SHOW WELCOME MESSAGE IF LOGGED IN -->
   <% } else { %>
   <div class="jumbotron">
     <h1 class="display-4" id="welcome2">Welcome <%= username %>!</h1>
@@ -71,29 +75,32 @@
       console.log("Submitted Login Info");
       var username = $("#username").val();
       var password = $("#password").val();
+      const regex = /^[A-Z]{1}[a-zÀ-ÿ]{1,11}/;
 
-      var params = {
-        username: username,
-        password: password
-      };
+      // checks username for correct naming
+      if (username.match(regex)) {
+        var params = {
+          username: username,
+          password: password
+        };
 
-      $.ajax({
-        url: "/login",
-        type: "POST",
-        data: params,
-        complete: function (response) {
-          let data = JSON.parse(response.responseText);
-          console.log(data);
-          if (data.success) {
-            location.reload();
+        $.ajax({
+          url: "/login",
+          type: "POST",
+          data: params,
+          complete: function (response) {
+            let data = JSON.parse(response.responseText);
+            console.log(data);
+            if (data.success) {
+              location.reload();
+            }
+            else {
+              document.getElementById("loginErr").innerHTML = data.message;
+            }
           }
-          else {
-            document.getElementById("loginErr").innerHTML = data.message;
-          }
-        }
-      });
+        });
+      }
     };
-
 
     // CREATE AN ACCOUNT AND LOGIN 
     function createAccount() {
@@ -101,27 +108,33 @@
       var username = $("#username2").val();
       var password = $("#password2").val();
 
-      var params = {
-        username: username,
-        password: password
-      };
+      const regex = /^[A-Z]{1}[a-zÀ-ÿ]{1,11}/;
 
-      $.ajax({
-        url: "/createAccount",
-        type: "POST",
-        data: params,
-        complete: function (response) {
-          let data = JSON.parse(response.responseText);
-          console.log(data);
-          if (data.success) {
-            location.reload();
-          }
-          else {
-            document.getElementById("createErr").innerHTML = data.message;
-          }
+      // checks for correct naming of username
+      if (username.match(regex)) {
+        var params = {
+          username: username,
+          password: password
+        };
 
-        }
-      });
+        $.ajax({
+          url: "/createAccount",
+          type: "POST",
+          data: params,
+          complete: function (response) {
+            let data = JSON.parse(response.responseText);
+            console.log(data);
+            if (data.success) {
+              location.reload();
+            }
+            else {
+              document.getElementById("createErr").innerHTML = data.message;
+            }
+          }
+        });
+      } else {
+        document.getElementById("createErr").innerHTML = "Invalid Username. Must be between 2-12 letters and begin with a capital.";
+      }
     };
 
   </script>

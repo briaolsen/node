@@ -47,8 +47,8 @@
     <hr class="my-4">
 
     <div>
-      <table id="itemInfo" class="table table-fit table-dark">
-      </table>
+      <table id="itemInfo" class="table table-fit table-dark"></table>
+      <p id="error"></p>
     </div>
   </div>
 
@@ -66,36 +66,49 @@
     $("#findName").on('submit', function (event) {
       console.log("Called Find Name");
       event.preventDefault();
+      // clear errors
+      $('#itemInfo').html("");
+      $('#error').html("");
+      // get info
       var data = $("#findName").serialize();
-      $.ajax({
-        url: "/getItemByName",
-        type: "GET",
-        data: data,
-        dataType: 'json',
-        complete: function (response) {
-          let data = JSON.parse(response.responseText);
-          let html = '';
-          data.forEach(function (item) {
-            // shows item and button to add it to the wishlist
-            html += `<tr id="${item.id}-row"><td><button type="button" class="button btn btn-light btn-lg" id="${item.id}">Add</button>`;
-            html += `<td><a href="https://classic.wowhead.com/?item=${item.id}"><img src="${item.icon}"></a></td></tr>`;
+      var name = $("#name").val();
+      const regex = /^[a-zA-Z\s'-,]+$/;
+      // check if correct naming format
+      if (name.match(regex)) {
 
-            loadScript();
-          });
+        $.ajax({
+          url: "/getItemByName",
+          type: "GET",
+          data: data,
+          dataType: 'json',
+          complete: function (response) {
+            let data = JSON.parse(response.responseText);
+            let html = '';
+            data.forEach(function (item) {
+              // create new item and button for UI
+              html += `<tr id="${item.id}-row"><td><button type="button" class="button btn btn-light btn-lg" id="${item.id}">Add</button>`;
+              html += `<td><a href="https://classic.wowhead.com/?item=${item.id}"><img src="${item.icon}"></a></td></tr>`;
+              // reloads the script to show the item icon correctly
+              loadScript();
+            });
 
-          if (data.length < 1) {
-            $('#itemInfo').html("No results");
-          } else {
-            $('#itemInfo').html(html);
+            if (data.length < 1) {
+              $('#error').html("No results");
+            } else {
+              $('#itemInfo').html(html);
+            }
           }
-        }
-      });
+        });
+      } else {
+        $('#error').html("Item Name can only contain letters, spaces, commas, and apostrophes.");
+      }
     });
 
     // INSERTS AN ITEM INTO THE WISHLIST AND SHOWS IT IN THE CORRECT SLOT
     $(document).on("click", '.button', function (event) {
       event.preventDefault();
       console.log("Button clicked " + this.id);
+      // gets data and removes the item wanting to be inserted from the UI
       data = 'id=' + this.id;
       $(this).closest('tr').remove();
       $.ajax({
@@ -104,8 +117,10 @@
         data: data,
         complete: function (response) {
           let data = JSON.parse(response.responseText);
+          // creates a new remove button and item for the UI and updates the UI
           let row = `<td><button class="rmvbutton btn btn-dark btn-sm" id="${data.slot}">Remove</button></td><td>${data.slot}</td><td><a href="https://classic.wowhead.com/?item=${data.id}"></a></td>`;
           document.getElementById(`${data.slot}-row`).innerHTML = row;
+          // loads the scripts to make the tooltip show correctly
           loadScript();
         }
       });
@@ -115,15 +130,13 @@
     $(document).on("click", '.rmvbutton', function (event) {
       event.preventDefault();
       data = 'slot=' + this.id;
-
+      // updates UI to show a blank box instead of the item
       $(this).closest('tr').html(`<td></td><td>${this.id}</td><td><img src ="images/blank.png"></td></tr>`);
 
       $.ajax({
         url: "/removeItemWishlist",
         type: "POST",
-        data: data,
-        complete: function (response) {
-        }
+        data: data
       });
     });
 

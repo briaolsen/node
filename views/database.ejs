@@ -6,11 +6,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS and AJAX -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
+  <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="css/style.css">
 
   <title>WoWishlist Database</title>
@@ -46,6 +47,7 @@
   <table id="results" class="table table-fit table-dark"></table>
 
 
+  <!-- Wowhead Tooltip scripts -->
   <script>const whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false };</script>
   <script src="https://wow.zamimg.com/widgets/power.js"></script>
 
@@ -61,6 +63,7 @@
           let data = JSON.parse(response.responseText);
           let html = '';
           html = '<tr><th colspan="3">Item Database</th></tr>'
+          // updates UI to show each item in the database
           data.forEach(function (item) {
             html += '<tr>';
             html += '<td>' + item.id + '</td>';
@@ -73,6 +76,7 @@
       });
     }
 
+    // Shows items in database when page is ready
     $(document).ready(function () {
       getDatabase();
     });
@@ -81,48 +85,55 @@
     $("#findId").on('submit', function (event) {
       console.log("Called Find ID");
       event.preventDefault();
+      // get data and reset error message
       var data = $("#findId").serialize();
+      var itemID = $("#id").val();
       $('#error').html('');
-      //console.log(data);
-      $.ajax({
-        url: "/getItemById",
-        type: "GET",
-        data: data,
-        dataType: 'json',
-        complete: function (response) {
-          let data = JSON.parse(response.responseText).data;
-          //console.log(data);
-          let html = '';
+      
+      // checks item number for correct format
+      if (isNaN(itemID) || itemID < 0 || itemID > 19491) {
+        $('#error').html('Error. Must be a number between 0 and 19491.');
+      } else {
 
-          if (data != null) {
-            html += '<tr><td><form id="form-' + data.id + '"><button type="button" class="button btn btn-light btn-lg" id=' + data.id + '>Insert Item</button>';
-            html += '<input type="hidden" name="id" value="' + data.id + '">';
-            html += '<input type="hidden" name="name" value="' + data.name + '">';
-            html += '<input type="hidden" name="quality" value="' + data.quality + '">';
-            html += '<input type="hidden" name="itemClass" value="' + data.itemClass + '">';
-            html += '<input type="hidden" name="itemSubclass" value="' + data.itemSubclass + '">';
-            html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
-            html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
-            html += '<input type="hidden" name="icon" value="' + data.icon + '">';
-            html += '</form></td>';
-            html += '<td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
-            html += '<td class="' + data.quality + ' quality">' + data.name + '</td></tr>';
+        $.ajax({
+          url: "/getItemById",
+          type: "GET",
+          data: data,
+          dataType: 'json',
+          complete: function (response) {
+            let data = JSON.parse(response.responseText).data;
+            let html = '';
+            // updates UI to show item and hidden values to be added into database if button is pressed
+            if (data != null) {
+              html += '<tr><td><form id="form-' + data.id + '"><button type="button" class="button btn btn-light btn-lg" id=' + data.id + '>Insert Item</button>';
+              html += '<input type="hidden" name="id" value="' + data.id + '">';
+              html += '<input type="hidden" name="name" value="' + data.name + '">';
+              html += '<input type="hidden" name="quality" value="' + data.quality + '">';
+              html += '<input type="hidden" name="itemClass" value="' + data.itemClass + '">';
+              html += '<input type="hidden" name="itemSubclass" value="' + data.itemSubclass + '">';
+              html += '<input type="hidden" name="inventoryType" value="' + data.inventoryType + '">';
+              html += '<input type="hidden" name="inventoryName" value="' + data.inventoryName + '">';
+              html += '<input type="hidden" name="icon" value="' + data.icon + '">';
+              html += '</form></td>';
+              html += '<td><a href="https://classic.wowhead.com/?item=' + data.id + '"><img src="' + data.icon + '"></a></td>';
+              html += '<td class="' + data.quality + ' quality">' + data.name + '</td></tr>';
 
-          } else {
-            $('#error').html('Item not found.');
+            } else {
+              $('#error').html('Item not found.');
+            }
+            $('#itemInfo').html(html);
           }
-          $('#itemInfo').html(html);
-        }
-      });
+        });
+      }
     });
 
     // ADD A SEARCHED ITEM TO THE DATABASE
     $(document).on("click", '.button', function (event) {
       event.preventDefault();
       console.log("Button clicked " + this.id);
+
+      // gets information to be added, removes item from UI, deletes error message
       var data = $(`#form-${this.id}`).serialize();
-      console.log("Data " + this.id);
-      console.log(data);
       $(this).closest('tr').remove();
       $('#error').html('');
       $.ajax({
@@ -133,6 +144,7 @@
         complete: function (response) {
           let data = JSON.parse(response.responseText);
           console.log(data);
+          // updates page with new database item and notifies user
           $('#error').html(data.message);
           getDatabase();
         }
